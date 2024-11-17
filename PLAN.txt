@@ -125,11 +125,6 @@ class GameLoader:
     -scene
         *gltf scene ka dobi iz gltf file
 
-    fun generate_world_map():
-        *calls MapCreator
-        *adds world to scene
-        return GameInstance of world map
-
     fun get_game_instance_list():
         *returns GameInstance list that contains references to the scene nodes
 
