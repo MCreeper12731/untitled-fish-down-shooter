@@ -54,8 +54,8 @@ export class GameRenderer extends BaseRenderer {
         this.renderShadows(scene);
         this.renderColor(scene, camera, this.interTexture1);
         //post processing
-        this.renderPostProcessingEffect(this.box_blur, this.nearestSampler, this.interTexture1, this.interTexture2);
-        this.renderPostProcessingEffect(this.negative, this.nearestSampler, this.interTexture2, this.interTexture1);
+        //this.renderPostProcessingEffect(this.box_blur, this.nearestSampler, this.interTexture1, this.interTexture2);
+        //this.renderPostProcessingEffect(this.negative, this.nearestSampler, this.interTexture2, this.interTexture1);
         //output to canvas
         this.renderPostProcessingEffect(this.just_output, this.nearestSampler, this.interTexture1, this.context.getCurrentTexture());
     }

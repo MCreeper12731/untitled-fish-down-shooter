@@ -1,7 +1,7 @@
 @group(0) @binding(0) var sceneTexture: texture_2d<f32>;
 @group(0) @binding(1) var mySampler: sampler;
 
-const n: i32 = 5;
+const n: i32 = 1;
 const kernelSize: i32 = 2 * n + 1;
 
 @fragment

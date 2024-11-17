@@ -1,6 +1,7 @@
 import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
 import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 import { Game } from './game_engine/Game.js';
+import { GUI } from 'dat';
 
 const game = new Game();
 await game.load();
@@ -29,3 +30,4 @@ function resize({ displaySize: { width, height }}) {
 }
 new ResizeSystem({ canvas, resize }).start();
 new UpdateSystem({ update, render }).start();
+
