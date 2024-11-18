@@ -98,12 +98,12 @@
     {
         "type_id": "7",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/development_tmp/bregar_dev_tmp/player/player.obj",
+            "image": "../assets/development_tmp/bregar_dev_tmp/player/daylight_detector_inverted_top.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "isDynamic": true,
+            "isRigid": true,
             "velocity_2d": [0, 0],
             "max_speed": 0,
             "acceleration_2d": [0, 0],

@@ -1,6 +1,15 @@
 import { quat, vec2, vec3 } from 'glm';
 
-import { Transform } from '../core/Transform.js';
+import {
+    Node,
+    Camera,
+    Transform,
+    Model,
+    Texture,
+    Sampler,
+    Primitive,
+    Material
+} from 'engine/core.js';
 
 const States = Object.freeze({
     IDLE: {name: "idle", minTime: -1},
@@ -16,7 +25,7 @@ export class TopDownController {
         camera,
         dom_element,
         {
-            elevation = 15,
+            elevation = 10,
             keymap = {
                 "MouseLeft": States.ATTACKING,
                 "KeyR": States.RELOADING,

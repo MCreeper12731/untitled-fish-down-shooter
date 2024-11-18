@@ -10,6 +10,8 @@ import {
 } from 'engine/core.js';
 import { GameLoader } from './GameLoader.js';
 import { GameInstance_type, GameInstance } from './GameInstance.js';
+import { TopDownController } from './TopDownController.js';
+
 
 export class Game {
     constructor( {
@@ -59,9 +61,19 @@ export class Game {
     }
 
     async load(){
+       
+
         await this.loader.initialize();
         this.instances = this.loader.get_instance_list(this);
+
+        this.loadPlayer();
+        
         this.instance_count = this.instances.length;
+    }
+
+    async loadPlayer(){
+        this.player = await this.create_instance(7, [0,0], 1, [0,0], {});
+        this.loader.loadController(this);
     }
 
     async create_instance(type, position_2d, elevation, rotation, properties){

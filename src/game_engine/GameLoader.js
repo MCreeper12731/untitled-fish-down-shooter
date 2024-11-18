@@ -18,6 +18,7 @@ import { quat, vec3, mat4, vec2 } from 'glm';
 import { GameRenderer } from './GameRenderer.js';
 import { FirstPersonController } from 'engine/controllers/FirstPersonController.js';
 import { Light } from './Light.js';
+import { TopDownController } from './TopDownController.js';
 
 
 export class GameLoader {
@@ -58,9 +59,6 @@ export class GameLoader {
     get_instance_list(game_ref) {
         this.render_scene = this.loadScene(this.defaultScene);
 
-        const camera = this.loadNode('Camera');
-        camera.addComponent(new FirstPersonController(camera, this.canvas));
-
         const global_light = this.loadNode('Global_light');
         const l = global_light.getComponentOfType(Transform);
         const r = quat.create();
@@ -88,11 +86,16 @@ export class GameLoader {
         });
 
         this.render_scene.addChild(global_light);
-        this.render_scene.addChild(camera);
-        game_ref.camera = camera;
         //game_ref.player = GameInstance_tool.init_instance(game_ref, id++, GameInstance_tool.type_enum.PLAYER);
         game_ref.light = global_light;
         return game_instances;
+    }
+
+    loadController(game_ref){
+        const camera = this.loadNode('Camera');
+        camera.addComponent(new TopDownController(game_ref.player.render_node, camera, this.canvas));
+        game_ref.camera = camera;
+        this.render_scene.addChild(camera);
     }
 
     async create_instance(game_ref, type, position_2d, elevation, rotation, properties){
