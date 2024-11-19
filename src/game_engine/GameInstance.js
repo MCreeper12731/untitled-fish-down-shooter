@@ -118,7 +118,7 @@ export class GameInstance{
         
         const x_angle = Math.atan2(this.facing_direction[1], this.facing_direction[0])
         const q_rot = quat.create();
-        quat.rotateY(q_rot, q_rot, x_angle);
+        quat.rotateY(q_rot, q_rot, x_angle - Math.PI);
         t.rotation = q_rot;
     }
 }
