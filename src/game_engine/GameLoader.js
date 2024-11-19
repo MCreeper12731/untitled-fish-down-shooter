@@ -93,7 +93,7 @@ export class GameLoader {
 
     loadController(game_ref){
         const camera = this.loadNode('Camera');
-        camera.addComponent(new TopDownController(game_ref.player.render_node, camera, this.canvas));
+        camera.addComponent(new TopDownController(game_ref.player, camera, this.canvas));
         game_ref.camera = camera;
         this.render_scene.addChild(camera);
     }

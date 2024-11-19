@@ -56,11 +56,13 @@ export class GameInstance{
         facing_direction = [1, 0],
         elevation = 0,
         properties = {
-            isDynamic : false,
-            isRigid : false,
+            is_dynamic : false,
+            is_rigid : false,
             velocity_2d : [0, 0],
             max_speed : 0,
+            can_bypass_max_speed : false,
             acceleration_2d : [0, 0],
+            acceleration : 0,
             friction : 0,
             bounding_box : undefined,
         },
@@ -78,8 +80,16 @@ export class GameInstance{
 
     update(t, dt){
 
-        if (this.properties.isDynamic == true){
-            vec2.add(this.properties.velocity_2d, this.properties.velocity_2d, this.properties.acceleration_2d);
+        if (this.properties.is_dynamic == true){
+            
+            const speed = vec2.length(this.properties.velocity_2d);
+            if (speed < this.properties.max_speed || this.properties.can_bypass_max_speed) {
+                vec2.scaleAndAdd(this.properties.velocity_2d, this.properties.velocity_2d, this.properties.acceleration_2d, dt * this.properties.acceleration);
+            }
+
+            const decay = Math.exp(dt * Math.log(1 - this.properties.friction));
+            vec2.scale(this.properties.velocity_2d, this.properties.velocity_2d, decay);            
+            
             vec2.add(this.world_position, this.world_position, this.properties.velocity_2d);
         }
         this.update_3d_position();
@@ -98,15 +108,15 @@ export class GameInstance{
         vec2.rotate(facing_dir, facing_dir, [0,0], x_angle);
         this.facing_direction = facing_dir;
     }
-
+    
     update_3d_position(){
         //updates 3d Node vectors with the game 2d vectors
         const t = this.render_node.getComponentOfType(Transform); 
         t.translation[0] = this.world_position[0];
         t.translation[2] = this.world_position[1];
         t.translation[1] = this.elevation;
-
-        const x_angle = vec2.angle(this.facing_direction, [1, 0]);
+        
+        const x_angle = Math.atan2(this.facing_direction[1], this.facing_direction[0])
         const q_rot = quat.create();
         quat.rotateY(q_rot, q_rot, x_angle);
         t.rotation = q_rot;

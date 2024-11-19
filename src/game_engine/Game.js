@@ -21,7 +21,7 @@ export class Game {
         next_id = 0,
         state = 0,
         game_time = 0,
-        output_framerate = true,
+        output_framerate = false,
         fps_timer_ms = 150,
         last_frame_t = 0,
         
@@ -72,7 +72,16 @@ export class Game {
     }
 
     async loadPlayer(){
-        this.player = await this.create_instance(7, [0,0], 1, [0,0], {});
+        this.player = await this.create_instance(7, [0,0], 1, 0, {
+            is_dynamic: true,
+            is_rigid: true,
+            velocity_2d: [0, 0],
+            max_speed: 10,
+            can_bypass_max_speed: false,
+            acceleration_2d: [0, 0],
+            acceleration: 5,
+            friction: 0.999,
+        });
         this.loader.loadController(this);
     }
 
