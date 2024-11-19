@@ -1,7 +1,7 @@
 # Blender 4.2.3 LTS MTL File: 'None'
 # www.blender.org
 
-newmtl Material.026
+newmtl Material.001
 Ns 250.000000
 Ka 1.000000 1.000000 1.000000
 Kd 0.242276 0.153381 0.033249
@@ -11,7 +11,7 @@ Ni 1.500000
 d 1.000000
 illum 1
 
-newmtl Material.027
+newmtl Material.002
 Ns 250.000000
 Ka 1.000000 1.000000 1.000000
 Kd 0.066601 0.187816 0.018501
