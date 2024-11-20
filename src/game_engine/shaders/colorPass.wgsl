@@ -76,7 +76,11 @@ fn fragment(input: FragmentInput) -> FragmentOutput {
 
     let lambert = max(dot(N, L), 0.0);
 
-    let baseColor = textureSample(baseTexture, baseSampler, input.texcoords) * material.baseFactor;
+    let new_tex: vec2<f32> = vec2<f32>(input.texcoords.x, 1-input.texcoords.y);
+
+    let baseColor = textureSample(baseTexture, baseSampler, new_tex) * material.baseFactor;
+
+
 
     let shadowPosition = input.shadowPosition.xyz / input.shadowPosition.w;
     let shadowTexcoords = shadowPosition.xy * vec2(0.5, -0.5) + 0.5;

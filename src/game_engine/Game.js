@@ -9,7 +9,7 @@ import {
     Material
 } from 'engine/core.js';
 import { GameLoader } from './GameLoader.js';
-import { GameInstance_type, GameInstance } from './GameInstance.js';
+import { GameInstance_type, GameInstance, GameInstance_tool } from './GameInstance.js';
 import { TopDownController } from './TopDownController.js';
 
 
@@ -66,13 +66,13 @@ export class Game {
         await this.loader.initialize();
         this.instances = this.loader.get_instance_list(this);
 
-        this.loadPlayer();
+        await this.loadPlayer();
         
         this.instance_count = this.instances.length;
     }
 
     async loadPlayer(){
-        this.player = await this.create_instance(7, [0,0], 1, 0, {
+        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [0,0], 0.8, 0, {
             is_dynamic: true,
             is_rigid: true,
             velocity_2d: [0, 0],

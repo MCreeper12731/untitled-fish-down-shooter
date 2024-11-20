@@ -54,7 +54,7 @@ export class GameRenderer extends BaseRenderer {
         this.renderShadows(scene);
         this.renderColor(scene, camera, this.interTexture1);
         //post processing
-        //this.renderPostProcessingEffect(this.box_blur, this.nearestSampler, this.interTexture1, this.interTexture2);
+        //this.renderPostProcessingEffect(this.greyscale, this.nearestSampler, this.interTexture1, this.interTexture2);
         //this.renderPostProcessingEffect(this.negative, this.nearestSampler, this.interTexture2, this.interTexture1);
         //output to canvas
         this.renderPostProcessingEffect(this.just_output, this.nearestSampler, this.interTexture1, this.context.getCurrentTexture());
@@ -226,6 +226,21 @@ export class GameRenderer extends BaseRenderer {
             },
             fragment: {
                 module: negative_module,
+                entryPoint: 'fragment_main',
+                targets: [{ format : this.format }],
+            },
+            layout: 'auto',
+        });
+
+        const greyscale_module = this.device.createShaderModule({ code: await fetch('game_engine/shaders/greyscale.wgsl').then(response => response.text())});
+
+        this.greyscale =  await this.device.createRenderPipelineAsync({
+            vertex: {
+                module: postprocess_vertex_module,
+                entryPoint: 'vertex_main',
+            },
+            fragment: {
+                module: greyscale_module,
                 entryPoint: 'fragment_main',
                 targets: [{ format : this.format }],
             },
