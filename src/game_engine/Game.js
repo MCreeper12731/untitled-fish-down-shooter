@@ -24,6 +24,8 @@ export class Game {
         output_framerate = false,
         fps_timer_ms = 150,
         last_frame_t = 0,
+        displaying_progress = true,
+        wave_progress = 0.7,
         
         camera = undefined,
         player = undefined,
@@ -36,20 +38,26 @@ export class Game {
         this.state = state;
         this.next_id = next_id;
         this.game_time = game_time;
-        this.output_framerate = output_framerate
+        
         this.fps_timer_ms = fps_timer_ms
-        this.next_timer_trigger_time = fps_timer_ms
+        this.next_timer_trigger_time = fps_timer_ms;
         this.last_frame_t = 0;
-
+        
+        //coding
         this.player = player;
         this.camera = camera;
         this.light = light;
+        this.output_framerate = output_framerate
+
+
+        //game loop
+        this.wave_progress = wave_progress;
+        this.displaying_progress = displaying_progress;
+
     }
 
     update(t, dt){
         this.game_time = t;
-        //controller update
-        //physics update
         this.instances.forEach(instance => {
             if (instance == undefined){
                 return;
@@ -58,11 +66,14 @@ export class Game {
         });
 
         this.loader.update(t, dt);
+
+        //this.wave_progress += 0.001;
+        if (this.wave_progress >= 1){
+            this.wave_progress = 0;
+        }
     }
 
     async load(){
-       
-
         await this.loader.initialize();
         this.instances = this.loader.get_instance_list(this);
 
@@ -110,7 +121,7 @@ export class Game {
             console.log((dt*1000).toFixed(2)+" ms ("+(1000 / (dt*1000)).toFixed(2)+" fps)");
             this.next_timer_trigger_time = this.game_time * 1000 + this.fps_timer_ms;
         }
-        this.loader.renderer.render(this.loader.render_scene, this.camera);
+        this.loader.renderer.render(this.loader.render_scene, this.camera, this);
         this.last_frame_t = this.game_time;
     }
     resize(width, height){

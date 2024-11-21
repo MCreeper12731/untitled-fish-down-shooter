@@ -14,6 +14,8 @@ import {
 } from 'engine/core/SceneUtils.js';
 
 import { Light } from './Light.js';
+import { createTextureFromSource } from '../../engine/WebGPU.js';
+import { UIRenderer } from './UIRenderer.js';
 
 const vertexBufferLayout = {
     arrayStride: 32,
@@ -45,19 +47,27 @@ export class GameRenderer extends BaseRenderer {
         super(canvas);
     }
 
-    render(scene, camera) {
+    render(scene, camera, game_ref) {
         if (this.depthTexture.width !== this.canvas.width || this.depthTexture.height !== this.canvas.height
          || this.interTexture1.width !== this.canvas.width || this.interTexture1.height !== this.canvas.height
          || this.interTexture2.width !== this.canvas.width || this.interTexture2.height !== this.canvas.height
         ) this.recreateShaderTextures();
         //scene rendering
         this.renderShadows(scene);
-        this.renderColor(scene, camera, this.interTexture1);
+        this.renderColor(scene, camera, this.cur_texture_buffer);
         //post processing
         //this.renderPostProcessingEffect(this.greyscale, this.nearestSampler, this.interTexture1, this.interTexture2);
-        //this.renderPostProcessingEffect(this.negative, this.nearestSampler, this.interTexture2, this.interTexture1);
-        //output to canvas
-        this.renderPostProcessingEffect(this.just_output, this.nearestSampler, this.interTexture1, this.context.getCurrentTexture());
+        //this.renderPostProcessingEffect(this.negative, this.nearestSampler, this.cur_texture_buffer, this.next_texture_buffer);
+
+        //UI drawing
+        this.UIRenderer.drawUI(game_ref, this.cur_texture_buffer, this.next_texture_buffer);
+        this.renderPostProcessingEffect(this.just_output, this.nearestSampler, this.cur_texture_buffer, this.context.getCurrentTexture());
+    }
+
+    switch_texture_buffers(){
+        const n = this.cur_texture_buffer;
+        this.cur_texture_buffer = this.next_texture_buffer;
+        this.next_texture_buffer = n;
     }
 
     async initialize() {
@@ -70,6 +80,9 @@ export class GameRenderer extends BaseRenderer {
         const shadowPassModule = this.device.createShaderModule({ code: shadowPassCode });
 
         await this.setupPostProcessingShaders();
+        
+        this.UIRenderer = new UIRenderer(this);
+        this.UIRenderer.init();
 
         this.modelBindGroupLayout = this.device.createBindGroupLayout({
             entries: [
@@ -183,7 +196,7 @@ export class GameRenderer extends BaseRenderer {
 
     async setupPostProcessingShaders(){
 
-        const postprocess_vertex_module = this.device.createShaderModule({ 
+        this.postprocess_vertex_module = this.device.createShaderModule({ 
             code: await fetch('game_engine/shaders/postprocess_vertex.wgsl').then(response => response.text())
         });
 
@@ -191,7 +204,7 @@ export class GameRenderer extends BaseRenderer {
 
         this.box_blur =  await this.device.createRenderPipelineAsync({
             vertex: {
-                module: postprocess_vertex_module,
+                module: this.postprocess_vertex_module,
                 entryPoint: 'vertex_main',
             },
             fragment: {
@@ -206,7 +219,7 @@ export class GameRenderer extends BaseRenderer {
 
         this.just_output =  await this.device.createRenderPipelineAsync({
             vertex: {
-                module: postprocess_vertex_module,
+                module: this.postprocess_vertex_module,
                 entryPoint: 'vertex_main',
             },
             fragment: {
@@ -221,7 +234,7 @@ export class GameRenderer extends BaseRenderer {
 
         this.negative =  await this.device.createRenderPipelineAsync({
             vertex: {
-                module: postprocess_vertex_module,
+                module: this.postprocess_vertex_module,
                 entryPoint: 'vertex_main',
             },
             fragment: {
@@ -236,7 +249,7 @@ export class GameRenderer extends BaseRenderer {
 
         this.greyscale =  await this.device.createRenderPipelineAsync({
             vertex: {
-                module: postprocess_vertex_module,
+                module: this.postprocess_vertex_module,
                 entryPoint: 'vertex_main',
             },
             fragment: {
@@ -390,7 +403,9 @@ export class GameRenderer extends BaseRenderer {
             usage:
                 GPUTextureUsage.TEXTURE_BINDING |
                 GPUTextureUsage.COPY_SRC |
-                GPUTextureUsage.RENDER_ATTACHMENT,
+                GPUTextureUsage.COPY_DST |
+                GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.STORAGE | GPUTextureUsage.SAMPLED,
+            label: 'interTexture1',
             format: this.format
         });
 
@@ -400,9 +415,16 @@ export class GameRenderer extends BaseRenderer {
             usage:
                 GPUTextureUsage.TEXTURE_BINDING |
                 GPUTextureUsage.COPY_SRC |
-                GPUTextureUsage.RENDER_ATTACHMENT,
+                GPUTextureUsage.COPY_DST |
+                GPUTextureUsage.RENDER_ATTACHMENT | 
+                GPUTextureUsage.STORAGE | 
+                GPUTextureUsage.SAMPLED,
+            label: 'interTexture2',
             format: this.format
         });
+
+        this.cur_texture_buffer = this.interTexture1;
+        this.next_texture_buffer = this.interTexture2;
     }
 
     renderPostProcessingEffect(effect_frag_pipeline, tex_sampler, readFromTexture, writeToTexture){
@@ -435,6 +457,8 @@ export class GameRenderer extends BaseRenderer {
         postProcessingPass.end();
 
         this.device.queue.submit([encoder.finish()]);
+
+        this.switch_texture_buffers();
     }
 
     renderShadows(scene) {

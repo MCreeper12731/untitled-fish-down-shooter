@@ -8,10 +8,10 @@ await game.load();
 await game.create_instance(3, [0,-10], 1, 0, {
     isDynamic : true,
     isRigid : false,
-    velocity_2d : [-0.0005, 0],
-    max_speed : 0,
-    acceleration_2d : [0, 0],
-    friction : 0
+    velocity_2d : [0, 0],
+    max_speed : 200,
+    acceleration_2d : [100, 0],
+    friction : 0.1
 });
 
 //game.remove_instance(1);
