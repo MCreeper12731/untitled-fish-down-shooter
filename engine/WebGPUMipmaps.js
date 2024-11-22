@@ -19,7 +19,7 @@ struct Interpolants {
 fn vertex(@builtin(vertex_index) index: u32) -> Interpolants {
     var output: Interpolants;
     let position = positions[index];
-    output.position = vec4f(position * 2 - 1, 0, 1);
+    output.position = vec4f(position * vec2f(2, -2) - vec2f(1, -1), 0, 1);
     output.texcoords = position;
     return output;
 }
@@ -76,7 +76,7 @@ export function generateMipmaps2D(device, texture) {
         });
 
         const inputSampler = device.createSampler({
-            minFilter: 'linear',
+            minFilter: 'nearest',
         });
 
         const bindGroup = device.createBindGroup({

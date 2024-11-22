@@ -25,14 +25,14 @@ export class Game {
         fps_timer_ms = 150,
         last_frame_t = 0,
         displaying_progress = true,
-        wave_progress = 0.7,
+        wave_progress = 0.1,
         
         camera = undefined,
         player = undefined,
         light = undefined,
 
     } = {}) {
-        this.loader = new GameLoader(world_path, asset_folder);
+        this.loader = new GameLoader(world_path, asset_folder, this);
         this.instances = [];
         this.instance_count = instance_count;
         this.state = state;
@@ -48,7 +48,13 @@ export class Game {
         this.camera = camera;
         this.light = light;
         this.output_framerate = output_framerate
-
+        this.UI_data = {
+            progress_bar_pos_x : 0.5, //in UV space, in the middle
+            progress_bar_pos_y: 0.04, //in UV space
+            weapon_ui_pos_x : 0.03,
+            weapon_ui_pos_y : 0.7,
+            weapon_ui_variation: 1
+        }
 
         //game loop
         this.wave_progress = wave_progress;
@@ -83,7 +89,7 @@ export class Game {
     }
 
     async loadPlayer(){
-        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [0,0], 0.8, 0, {
+        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [0,0], 1.2, 0, {
             is_dynamic: true,
             is_rigid: true,
             velocity_2d: [0, 0],

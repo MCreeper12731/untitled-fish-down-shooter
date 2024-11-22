@@ -1,7 +1,7 @@
 export class Light {
 
     constructor({
-        resolution = [1024*2, 1024*2],
+        resolution = [512, 512],
     } = {}) {
         this.resolution = resolution;
     }

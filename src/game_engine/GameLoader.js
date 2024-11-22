@@ -24,22 +24,23 @@ import { TopDownController } from './TopDownController.js';
 export class GameLoader {
 
 
-    constructor(gltf_path, asset_map_path, {
+    constructor(gltf_path, asset_map_path, game_ref,{
 
     } = {}) {
         this.gltf_path = '../'+gltf_path;
         this.instance_asset_map_path = asset_map_path;
         this.instance_init_lookup = undefined;
         this.render_scene = undefined;
-        this.canvas = undefined
-        this.renderer = undefined
+        this.canvas = undefined;
+        this.renderer = undefined;
+        this.game_ref = game_ref;
     }
 
     async initialize(){
         //init graphics setup
         this.canvas = document.querySelector('canvas');
 
-        this.renderer = new GameRenderer(this.canvas);
+        this.renderer = new GameRenderer(this.canvas, this.game_ref);
         await this.renderer.initialize();
 
         //init loader
@@ -59,18 +60,6 @@ export class GameLoader {
     get_instance_list(game_ref) {
         this.render_scene = this.loadScene(this.defaultScene);
 
-        const global_light = this.loadNode('Global_light');
-        const l = global_light.getComponentOfType(Transform);
-        const r = quat.create();
-        quat.rotateX(r, r, -1.57);
-        l.rotation = r
-        global_light.addComponent(new Light());
-        global_light.addComponent(new Camera({
-            near: 1,
-            far: l.translation[1] + 1,
-            fovy: 1.57,
-        }));
-        
         const game_instances = []
         var id = 0;
         this.render_scene.traverse(node => {
@@ -85,11 +74,33 @@ export class GameLoader {
             id++;
         });
 
+        const global_light = this.load_global_light(512*8, Math.PI - 0.4);
+
         this.render_scene.addChild(global_light);
         //game_ref.player = GameInstance_tool.init_instance(game_ref, id++, GameInstance_tool.type_enum.PLAYER);
         game_ref.light = global_light;
         return game_instances;
     }
+
+    load_global_light(resolution, fov){
+        const global_light = this.loadNode('Global_light');
+
+        const light_transform = global_light.getComponentOfType(Transform);
+        const down_rotation = quat.create();
+        quat.rotateX(down_rotation, down_rotation, -1.57);
+        light_transform.rotation = down_rotation
+
+
+        global_light.addComponent(new Light({resolution : [resolution, resolution]}));
+        global_light.addComponent(new Camera({
+            near: 2,
+            far: light_transform.translation[1],
+            fovy: fov,
+        }));
+
+        return global_light;
+    }
+
 
     loadController(game_ref){
         const camera = this.loadNode('Camera');

@@ -4,6 +4,7 @@ import * as WebGPU from 'engine/WebGPU.js';
 
 import { Camera } from 'engine/core.js';
 import { BaseRenderer } from 'engine/renderers/BaseRenderer.js';
+import * as MipMaps from 'engine/WebGPUMipmaps.js';
 
 import {
     getLocalModelMatrix,
@@ -43,25 +44,31 @@ const vertexBufferLayout = {
 
 export class GameRenderer extends BaseRenderer {
 
-    constructor(canvas) {
+    constructor(canvas, game_ref) {
         super(canvas);
+        this.game_ref = game_ref;
     }
 
     render(scene, camera, game_ref) {
         if (this.depthTexture.width !== this.canvas.width || this.depthTexture.height !== this.canvas.height
          || this.interTexture1.width !== this.canvas.width || this.interTexture1.height !== this.canvas.height
          || this.interTexture2.width !== this.canvas.width || this.interTexture2.height !== this.canvas.height
-        ) this.recreateShaderTextures();
+        ) {
+            this.recreateShaderTextures();
+            this.UIRenderer.reconfigure_ui_positions();
+        }
         //scene rendering
         this.renderShadows(scene);
         this.renderColor(scene, camera, this.cur_texture_buffer);
         //post processing
         //this.renderPostProcessingEffect(this.greyscale, this.nearestSampler, this.interTexture1, this.interTexture2);
         //this.renderPostProcessingEffect(this.negative, this.nearestSampler, this.cur_texture_buffer, this.next_texture_buffer);
-
+        this.renderPostProcessingEffect(this.downsample, this.linearSampler, this.cur_texture_buffer, this.next_texture_buffer);
         //UI drawing
         this.UIRenderer.drawUI(game_ref, this.cur_texture_buffer, this.next_texture_buffer);
+
         this.renderPostProcessingEffect(this.just_output, this.nearestSampler, this.cur_texture_buffer, this.context.getCurrentTexture());
+        
     }
 
     switch_texture_buffers(){
@@ -81,9 +88,8 @@ export class GameRenderer extends BaseRenderer {
 
         await this.setupPostProcessingShaders();
         
-        this.UIRenderer = new UIRenderer(this);
-        this.UIRenderer.init();
-
+        this.UIRenderer = new UIRenderer(this, this.game_ref);
+        
         this.modelBindGroupLayout = this.device.createBindGroupLayout({
             entries: [
                 {
@@ -190,8 +196,14 @@ export class GameRenderer extends BaseRenderer {
             magFilter: 'nearest',
             minFilter: 'nearest',
         });
+
+        this.linearSampler = this.device.createSampler({
+            magFilter: 'linear',
+            minFilter: 'linear',
+        });
         
         this.recreateShaderTextures();
+        this.UIRenderer.init();
     }
 
     async setupPostProcessingShaders(){
@@ -247,13 +259,28 @@ export class GameRenderer extends BaseRenderer {
 
         const greyscale_module = this.device.createShaderModule({ code: await fetch('game_engine/shaders/greyscale.wgsl').then(response => response.text())});
 
-        this.greyscale =  await this.device.createRenderPipelineAsync({
+        this.greyscale = await this.device.createRenderPipelineAsync({
             vertex: {
                 module: this.postprocess_vertex_module,
                 entryPoint: 'vertex_main',
             },
             fragment: {
                 module: greyscale_module,
+                entryPoint: 'fragment_main',
+                targets: [{ format : this.format }],
+            },
+            layout: 'auto',
+        });
+
+        const downsample_module = this.device.createShaderModule({ code: await fetch('game_engine/shaders/downsample.wgsl').then(response => response.text())});
+
+        this.downsample = await this.device.createRenderPipelineAsync({
+            vertex: {
+                module: this.postprocess_vertex_module,
+                entryPoint: 'vertex_main',
+            },
+            fragment: {
+                module: downsample_module,
                 entryPoint: 'fragment_main',
                 targets: [{ format : this.format }],
             },
