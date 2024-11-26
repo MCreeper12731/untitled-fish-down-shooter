@@ -98,8 +98,8 @@
     {
         "type_id": "7",
         "materials": {
-            "mesh": "../assets/models/player/player.obj",
-            "image": "../assets/models/player/player.png"
+            "mesh": "../assets/models/enemies/shark.obj",
+            "image": "../assets/models/enemies/shark.png"
         },
         "properties": {
             "isDynamic": true,
