@@ -99,7 +99,7 @@
         "type_id": "7",
         "materials": {
             "mesh": "../assets/development_tmp/bregar_dev_tmp/player/player.obj",
-            "image": "../assets/development_tmp/bregar_dev_tmp/player/daylight_detector_inverted_top.png"
+            "image": "../assets/development_tmp/bregar_dev_tmp/player/player.png"
         },
         "properties": {
             "isDynamic": true,

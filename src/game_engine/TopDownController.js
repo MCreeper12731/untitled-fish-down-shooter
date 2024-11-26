@@ -13,8 +13,8 @@ export class TopDownController {
 
     constructor(game_instance, camera, canvas, {
             cam_properties = {
-                cam_elevation : 6,
-                cam_offset : [12, 4],
+                cam_elevation : 25,
+                cam_offset : [5, 5],
             },
             dash = {
                 cooldown_total : 1,
@@ -26,17 +26,23 @@ export class TopDownController {
                 "MouseLeft": States.ATTACKING,
                 "KeyR": States.RELOADING,
             },
+            diabolical = false,
         } = {}
     ) {
         // Initialization of Node and Camera 
         this.game_instance = game_instance;
         this.camera = camera;
-        this.init_camera(cam_properties);
+        let angle_y = this.init_camera(cam_properties);
+        this.rotation_offset = {
+            sin: Math.sin(angle_y),
+            cos: Math.cos(angle_y),
+        }
 
         // Initialization of static variables
         this.canvas = canvas;
         this.keymap = keymap;
         this.cam_offset = cam_properties.cam_offset;
+        this.diabolical = diabolical;
         
         // Initialization of state variables
         this.state = {
@@ -85,21 +91,19 @@ export class TopDownController {
         cam_transform.rotation = rotation;
 
         // Rotation offset for movement and mouse follow
-        this.rotation_offset = {
-            sin: Math.sin(angle_y),
-            cos: Math.cos(angle_y),
-        }
+        return angle_y;
     }
 
     init_event_handlers() {
 
         const doc = this.canvas.ownerDocument;
-
+        
         doc.addEventListener('pointermove', event => this.pointermove_handler(event));
         doc.addEventListener('mousedown', event => this.mousedown_handler(event));
         doc.addEventListener('mouseup', event => this.mouseup_handler(event));
         doc.addEventListener('keydown', event => this.keydown_handler(event));
         doc.addEventListener('keyup', event => this.keyup_handler(event));
+
 
     }
 
@@ -108,15 +112,31 @@ export class TopDownController {
         this.updateState(t, dt);
 
         this.calculate_acceleration(t, dt);        
+        
+        if (this.diabolical) {
+            const x_angle = Math.atan2(this.game_instance.facing_direction[0], this.game_instance.facing_direction[1]);
+            
+            this.cam_offset_alt = [
+                this.cam_offset[0] * Math.cos(x_angle) - this.cam_offset[1] * Math.sin(x_angle),
+                this.cam_offset[0] * Math.sin(x_angle) + this.cam_offset[1] * Math.cos(x_angle),
+            ];
+
+            
+            this.init_camera({cam_elevation: 25, cam_offset: this.cam_offset_alt});
+        }
 
         // Update camera position based on node
         const camTransform = this.camera.getComponentOfType(Transform);
 
-        camTransform.translation = [
-            this.game_instance.world_position[0] - this.cam_offset[0],
-            camTransform.translation[1],
-            this.game_instance.world_position[1] - this.cam_offset[1]
-        ];
+        
+        if (!this.diabolical) {
+            camTransform.translation = [
+                this.game_instance.world_position[0] - this.cam_offset[0],
+                camTransform.translation[1],
+                this.game_instance.world_position[1] - this.cam_offset[1]
+            ];
+        }
+
     }
 
     updateState(t, dt) {
@@ -199,7 +219,7 @@ export class TopDownController {
     }
 
     pointermove_handler(event) {
-
+        
         let facing_direction = [
             -1.0 + 2.0 * event.x / event.srcElement.clientWidth,
             1.0 - 2.0 * event.y / event.srcElement.clientHeight,
@@ -211,6 +231,7 @@ export class TopDownController {
             facing_direction[0] * this.rotation_offset.cos - facing_direction[1] * this.rotation_offset.sin,
             facing_direction[0] * this.rotation_offset.sin + facing_direction[1] * this.rotation_offset.cos,
         ];
+
     }
 
     keydown_handler(event) {

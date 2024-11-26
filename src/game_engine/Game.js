@@ -79,7 +79,7 @@ export class Game {
             max_speed: 10,
             can_bypass_max_speed: false,
             acceleration_2d: [0, 0],
-            acceleration: 5,
+            acceleration: 10,
             friction: 0.999,
         });
         this.loader.loadController(this);
