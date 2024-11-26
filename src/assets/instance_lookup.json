@@ -98,8 +98,8 @@
     {
         "type_id": "7",
         "materials": {
-            "mesh": "../assets/models/enemies/shrimp.obj",
-            "image": "../assets/models/enemies/shrimp.png"
+            "mesh": "../assets/models/harpoon/harpoon_lvl4.obj",
+            "image": "../assets/models/harpoon/harpoon_lvl4.png"
         },
         "properties": {
             "isDynamic": true,
