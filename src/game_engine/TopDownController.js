@@ -19,8 +19,9 @@ export class TopDownController {
             dash = {
                 cooldown_total : 1,
                 cooldown_left : 0,
-                speed_increase : 10,
-                speed_increase_duration : 0.1,
+                acceleration_modifier_factor : 2,
+                acceleration_modifier_length : 0.1,
+                acceleration_original : game_instance.properties.acceleration
             },
             keymap = {
                 "MouseLeft": States.ATTACKING,
@@ -179,11 +180,11 @@ export class TopDownController {
             node_properties.acceleration_2d = [0,0];
         }
         
-        if (this.dash.cooldown_total - this.dash.cooldown_left < this.dash.speed_increase_duration) {
-            vec2.scale(acceleration_dir, acceleration_dir, this.dash.speed_increase);
-            node_properties.acceleration_2d = acceleration_dir;
+        if (this.dash.cooldown_total - this.dash.cooldown_left < this.dash.acceleration_modifier_length) {
+            node_properties.acceleration = this.dash.acceleration_modifier_factor * this.dash.acceleration_original
             node_properties.can_bypass_max_speed = true;
         } else {
+            node_properties.acceleration = this.dash.acceleration_original
             node_properties.can_bypass_max_speed = false;
         }
         if (this.dash.cooldown_left > 0) this.dash.cooldown_left -= dt;

@@ -165,7 +165,7 @@
             "max_speed": 9,
             "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "acceleration": 2,
+            "acceleration": 10,
             "friction": 0.99,
             "bounding_box": {
                 "min": [-1, -1, -1],

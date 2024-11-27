@@ -90,7 +90,7 @@ export class GameInstance{
     }
 
     update(t, dt){
-        if (this.properties.is_dynamic == true){
+        if (this.properties.is_dynamic === true){
 
             const current_acceleration = vec2.clone(this.properties.acceleration_2d);
             const current_velocity = vec2.clone(this.properties.velocity_2d);
@@ -100,26 +100,31 @@ export class GameInstance{
             vec2.scale(acc_dt, acc_dt, dt);
             const new_velocity = vec2.clone(current_velocity);
             vec2.add(new_velocity, new_velocity, acc_dt);
+
+            //unit acceleration vector
+            const acc_norm = vec2.clone(current_acceleration);
+            vec2.normalize(acc_norm, acc_norm);
+            //component of new velocity vector pointing in the direction of acceleration
+            const forward_vel = vec2.clone(acc_norm);
+            const dotProduct = vec2.dot(new_velocity, acc_norm);
+
             if (vec2.length(new_velocity) < this.properties.max_speed || this.properties.can_bypass_max_speed){
-                //unit acceleration vector
-                const acc_norm = vec2.clone(current_acceleration);
-                vec2.normalize(acc_norm, acc_norm);
-                //component of new velocity vector pointing in the direction of acceleration
-                const forward_vel = vec2.clone(acc_norm);
-                const dotProduct = vec2.dot(new_velocity, acc_norm);
+                
                 vec2.scale(forward_vel, forward_vel, dotProduct);
 
-                //component perpendicular to acceleration  - dampen this
-                const dampen_vel = vec2.clone(new_velocity);
-                vec2.subtract(dampen_vel, dampen_vel, forward_vel);
-                const decay = Math.exp(dt * Math.log(1 - this.properties.friction));
-                vec2.scale(dampen_vel, dampen_vel, decay);
-
-
-                //combine them back
-                vec2.add(forward_vel, forward_vel, dampen_vel);
-                this.properties.velocity_2d = forward_vel;
             }
+
+            //component perpendicular to acceleration  - dampen this
+            const dampen_vel = vec2.clone(new_velocity);
+            vec2.subtract(dampen_vel, dampen_vel, forward_vel);
+            const decay = Math.exp(dt * Math.log(1 - this.properties.friction));
+            vec2.scale(dampen_vel, dampen_vel, decay);
+
+
+            //combine them back
+            vec2.add(forward_vel, forward_vel, dampen_vel);
+            this.properties.velocity_2d = forward_vel;
+
 
             //apply final speeds
             const final_velocity = vec2.clone(this.properties.velocity_2d);
