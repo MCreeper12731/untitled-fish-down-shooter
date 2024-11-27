@@ -134,7 +134,7 @@ export class Player extends GameInstance{
     } = {}) {
         super(game_ref, id, type);
         this.player_state = player_state
-        this.health = health,
+        this.health = health
         this.primary_weapon = primary_weapon
         this.basic_melee = basic_melee
     }

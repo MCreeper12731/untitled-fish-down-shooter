@@ -11,6 +11,7 @@ import {
 import { GameLoader } from './GameLoader.js';
 import { GameInstance_type, GameInstance, GameInstance_tool } from './GameInstance.js';
 import { TopDownController } from './TopDownController.js';
+import { Physics } from './Physics.js';
 
 
 export class Game {
@@ -30,7 +31,9 @@ export class Game {
         light = undefined,
 
     } = {}) {
-        this.loader = new GameLoader(world_path, asset_folder);
+        this.physics = new Physics(this);
+        this.loader = new GameLoader(world_path, asset_folder, this.physics);
+        
         this.instances = [];
         this.instance_count = instance_count;
         this.state = state;
@@ -40,10 +43,11 @@ export class Game {
         this.fps_timer_ms = fps_timer_ms
         this.next_timer_trigger_time = fps_timer_ms
         this.last_frame_t = 0;
-
+        
         this.player = player;
         this.camera = camera;
         this.light = light;
+
     }
 
     update(t, dt){
@@ -58,6 +62,7 @@ export class Game {
         });
 
         this.loader.update(t, dt);
+        this.physics.update(t, dt);
     }
 
     async load(){
@@ -65,14 +70,14 @@ export class Game {
 
         await this.loader.initialize();
         this.instances = this.loader.get_instance_list(this);
-
+        
         await this.loadPlayer();
         
         this.instance_count = this.instances.length;
     }
 
     async loadPlayer(){
-        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [0,0], 0.8, 0, {
+        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [0,0], 2, 0, {
             is_dynamic: true,
             is_rigid: true,
             velocity_2d: [0, 0],

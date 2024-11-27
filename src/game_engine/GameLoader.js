@@ -24,11 +24,12 @@ import { TopDownController } from './TopDownController.js';
 export class GameLoader {
 
 
-    constructor(gltf_path, asset_map_path, {
+    constructor(gltf_path, asset_map_path, physics, {
 
     } = {}) {
         this.gltf_path = '../'+gltf_path;
         this.instance_asset_map_path = asset_map_path;
+        this.physics = physics
         this.instance_init_lookup = undefined;
         this.render_scene = undefined;
         this.canvas = undefined
@@ -129,6 +130,8 @@ export class GameLoader {
         vec2.rotate(instance.facing_direction, instance.facing_direction, [0,0], rotation);
         instance.properties = properties == undefined ? instance.properties : properties
         instance.update_3d_position();
+        
+        this.physics.initialize(instance);
 
         return instance;
     }
