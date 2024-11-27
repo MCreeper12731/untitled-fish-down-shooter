@@ -131,14 +131,13 @@ export class GameLoader {
 
         const model_array = [];
         const multi_model = instance.properties.is_multi_model;
-        if (multi_model != undefined){
+        if (multi_model){
             const model_count = instance.properties.model_count;
             const mat_array = []
             
             Object.keys(mats).forEach(function(key,index) {
                 mat_array.push(key);
             });
-
             for (let i = 0; i < model_count * 2; i+=2){
                 const res = await loadResources({
                     'mesh': new URL(mats[mat_array[i]], import.meta.url),
@@ -161,6 +160,7 @@ export class GameLoader {
             }
             node.addComponent(model_array[0]);
         } else {
+            
             const model = new Model({
                 primitives: [
                     new Primitive({

@@ -1,26 +1,10 @@
 import { vec3, mat4 } from 'glm';
 import { getGlobalModelMatrix } from 'engine/core/SceneUtils.js';
-import { Transform, Model } from 'engine/core.js';
-import {
-    calculateAxisAlignedBoundingBox,
-    mergeAxisAlignedBoundingBoxes,
-} from 'engine/core/MeshUtils.js';
 
 export class Physics {
 
     constructor(game) {
         this.game = game
-    }
-    
-    initialize(game_instance) {
-        const model = game_instance.render_node.getComponentOfType(Model);
-        if (!model) {
-            return;
-        }
-    
-        const boxes = model.primitives.map(primitive => calculateAxisAlignedBoundingBox(primitive.mesh));
-        game_instance.render_node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
-        
     }
 
     update(t, dt) {
@@ -48,10 +32,10 @@ export class Physics {
             && this.intervalIntersection(aabb1.min[2], aabb1.max[2], aabb2.min[2], aabb2.max[2]);
     }
 
-    getTransformedAABB(node) {
+    getTransformedAABB(game_instance) {
         // Transform all vertices of the AABB from local to global space.
-        const matrix = getGlobalModelMatrix(node);
-        const { min, max } = node.aabb;
+        const matrix = getGlobalModelMatrix(game_instance.render_node);
+        const { min, max } = game_instance.properties.bounding_box;
         const vertices = [
             [min[0], min[1], min[2]],
             [min[0], min[1], max[2]],
@@ -75,9 +59,9 @@ export class Physics {
     resolveCollision(game_instance_a, game_instance_b) {
 
         // Get global space AABBs.
-        if (!game_instance_a.render_node.aabb || !game_instance_b.render_node.aabb) return;
-        const aBox = this.getTransformedAABB(game_instance_a.render_node);
-        const bBox = this.getTransformedAABB(game_instance_b.render_node);
+        if (!game_instance_a.properties.bounding_box || !game_instance_b.properties.bounding_box) return;
+        const aBox = this.getTransformedAABB(game_instance_a);
+        const bBox = this.getTransformedAABB(game_instance_b);
 
         // Check if there is collision.
         const isColliding = this.aabbIntersection(aBox, bBox);
