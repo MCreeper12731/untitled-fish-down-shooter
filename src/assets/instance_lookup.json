@@ -99,7 +99,7 @@
         "type_id": "7",
         "materials": {
             "mesh": "../assets/models/player/player.obj",
-            "image": "../assets/models/player/PlayerWholeTexture.png"
+            "image": "../assets/models/player/player.png"
         },
         "properties": {
             "isDynamic": true,
