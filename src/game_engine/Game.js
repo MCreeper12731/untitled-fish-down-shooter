@@ -11,6 +11,7 @@ import {
 import { GameLoader } from './GameLoader.js';
 import { GameInstance_type, GameInstance, GameInstance_tool } from './GameInstance.js';
 import { TopDownController } from './TopDownController.js';
+import { Physics } from './Physics.js';
 
 
 export class Game {
@@ -24,12 +25,14 @@ export class Game {
         output_framerate = false,
         fps_timer_ms = 150,
         last_frame_t = 0,
-        displaying_progress = true,
-        wave_progress = 0.1,
-        
+        displaying_progress = false,
+        wave_progress = 0.0,
+        wave_enemy_count = 10,
+
         camera = undefined,
         player = undefined,
         light = undefined,
+
 
     } = {}) {
         this.loader = new GameLoader(world_path, asset_folder, this);
@@ -59,51 +62,79 @@ export class Game {
         //game loop
         this.wave_progress = wave_progress;
         this.displaying_progress = displaying_progress;
+        this.next_wave_enemy_count = wave_enemy_count;
+        this.cur_wave_enemy_count = 0;
+
+        this.game_state_enum = {
+            GAME_RESET:0,
+            IDLE : 1,
+            WAVE_BEGINNING : 2,
+            WAVE_IN_PROGRESS : 3,
+        };
 
     }
 
     update(t, dt){
-        this.game_time = t;
+        this.game_time = t; 
+
+        switch (this.state){
+            case this.game_state_enum.GAME_RESET:
+                this.create_instance(GameInstance_tool.type_enum.CRATE, [0,0], 20, 0);
+                this.state = this.game_state_enum.IDLE;
+                break;
+            case this.game_state_enum.IDLE:
+                break;
+            case this.game_state_enum.WAVE_BEGINNING:
+                break;
+            case this.game_state_enum.WAVE_IN_PROGRESS:
+                break;
+            default:
+                console.log("game stateless error");
+        }
+
+
+
+        this.physics.update(t, dt);
+        this.update_scene(t, dt);
+    }
+
+    update_scene(t, dt){
         this.instances.forEach(instance => {
             if (instance == undefined){
                 return;
             }
             instance.update(t, dt);
         });
-
         this.loader.update(t, dt);
-
-        //this.wave_progress += 0.001;
-        if (this.wave_progress >= 1){
-            this.wave_progress = 0;
-        }
     }
 
     async load(){
+        this.physics = new Physics(this);
         await this.loader.initialize();
         this.instances = this.loader.get_instance_list(this);
+        this.instance_count = this.instances.length;
+        this.next_id = this.instance_count;
 
         await this.loadPlayer();
         
-        this.instance_count = this.instances.length;
+        
     }
 
+    async spawn_enemy(enemy_type, x, y, dir){
+        return await this.create_instance(enemy_type, [x,y], 0, dir);
+    }
+
+
     async loadPlayer(){
-        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [0,0], 1.2, 0, {
-            is_dynamic: true,
-            is_rigid: true,
-            velocity_2d: [0, 0],
-            max_speed: 10,
-            can_bypass_max_speed: false,
-            acceleration_2d: [0, 0],
-            acceleration: 5,
-            friction: 0.999,
-        });
+        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [0,0], -0.1, 0);
         this.loader.loadController(this);
+
+        this.player.weapon = await this.create_instance(GameInstance_tool.type_enum.HARPOON_EMPTY, [0,0], 1, 0)
     }
 
     async create_instance(type, position_2d, elevation, rotation, properties){
         const inst = await this.loader.create_instance(this, type, position_2d, elevation, rotation, properties);
+        this.physics.initialize(inst);
         this.instances.push(inst);
         this.instance_count++;
         this.next_id++;

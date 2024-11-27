@@ -2,96 +2,109 @@
     {
         "type_id": "1",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/models/trees/tree1.obj",
+            "image": "../assets/models/trees/tree1.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": true,
+            "is_dynamic": false,
+            "is_rigid": true,
             "velocity_2d": [0, 0],
             "max_speed": 0,
+            "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 0,
+            "friction": 0.0,
             "bounding_box": "undefined"
         }
     },
     {
         "type_id": "2",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/models/trees/tree3.obj",
+            "image": "../assets/models/trees/tree3.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "is_dynamic": false,
+            "is_rigid": true,
             "velocity_2d": [0, 0],
             "max_speed": 0,
+            "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 0,
+            "friction": 0.0,
             "bounding_box": "undefined"
         }
     },
     {
         "type_id": "3",
         "materials": {
-            "mesh": "../assets/development_tmp/bregar_dev_tmp/test_dynamic_object/test_object.obj",
-            "image": "../assets/development_tmp/bregar_dev_tmp/gold_block.png"
+            "mesh": "../assets/models/rocks/rock1.obj",
+            "image": "../assets/models/rocks/rock.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "is_dynamic": false,
+            "is_rigid": true,
             "velocity_2d": [0, 0],
             "max_speed": 0,
+            "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 0,
+            "friction": 0.0,
             "bounding_box": "undefined"
         }
     },
     {
         "type_id": "4",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/models/shop/shop.obj",
+            "image": "../assets/models/shop/shop.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "is_dynamic": false,
+            "is_rigid": true,
             "velocity_2d": [0, 0],
             "max_speed": 0,
+            "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 0,
+            "friction": 0.0,
             "bounding_box": "undefined"
         }
     },
     {
         "type_id": "5",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/models/grass/grass1.obj",
+            "image": "../assets/models/grass/grass.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "is_dynamic": false,
+            "is_rigid": false,
             "velocity_2d": [0, 0],
             "max_speed": 0,
+            "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 0,
+            "friction": 0.0,
             "bounding_box": "undefined"
         }
     },
     {
         "type_id": "6",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/models/crate/crate.obj",
+            "image": "../assets/models/crate/crate.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "model_scale" : 2.5,
+            "is_dynamic": false,
+            "is_rigid": true,
             "velocity_2d": [0, 0],
             "max_speed": 0,
+            "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 0,
+            "friction": 0.0,
             "bounding_box": "undefined"
         }
     },
@@ -99,127 +112,151 @@
         "type_id": "7",
         "materials": {
             "mesh": "../assets/models/player/player.obj",
-            "image": "../assets/models/player/PlayerWholeTexture.png"
+            "image": "../assets/models/player/player.png"
         },
         "properties": {
-            "isDynamic": true,
-            "isRigid": true,
+            "model_scale" : 0.4,
+            "is_dynamic": true,
+            "is_rigid": true,
             "velocity_2d": [0, 0],
-            "max_speed": 0,
+            "max_speed": 10,
+            "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 200,
+            "friction": 0.9999,
             "bounding_box": "undefined"
         }
     },
     {
         "type_id": "8",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/models/enemies/fish.obj",
+            "image": "../assets/models/enemies/fish.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "model_scale" : 1.5,
+            "model_rotation_offset" : 90,
+            "model_elevation" : -0.1,
+            
+            "is_dynamic": true,
+            "is_rigid": true,
             "velocity_2d": [0, 0],
-            "max_speed": 0,
+            "max_speed": 9,
+            "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 2,
+            "friction": 0.99,
             "bounding_box": "undefined"
         }
     },
     {
         "type_id": "9",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/models/enemies/shrimp.obj",
+            "image": "../assets/models/enemies/shrimp.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "is_dynamic": true,
+            "is_rigid": true,
             "velocity_2d": [0, 0],
-            "max_speed": 0,
+            "max_speed": 13,
+            "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 20,
+            "friction": 0.99,
             "bounding_box": "undefined"
         }
     },
     {
         "type_id": "10",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/models/enemies/shark.obj",
+            "image": "../assets/models/enemies/shark.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "is_dynamic": true,
+            "is_rigid": true,
             "velocity_2d": [0, 0],
-            "max_speed": 0,
+            "max_speed": 5,
+            "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 2,
+            "friction": 0.99,
             "bounding_box": "undefined"
         }
     },
     {
         "type_id": "11",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/models/harpoon/harpoon_empty.obj",
+            "image": "../assets/models/harpoon/harpoon_empty.png",
+            "mesh_alt_0": "../assets/models/harpoon/harpoon_lvl1.obj",
+            "image_alt_0": "../assets/models/harpoon/harpoon_lvl1.png",
+            "mesh_alt_1": "../assets/models/harpoon/harpoon_lvl2.obj",
+            "image_alt_1": "../assets/models/harpoon/harpoon_lvl2.png",
+            "mesh_alt_2": "../assets/models/harpoon/harpoon_lvl3.obj",
+            "image_alt_2": "../assets/models/harpoon/harpoon_lvl3.png",
+            "mesh_alt_3": "../assets/models/harpoon/harpoon_lvl4.obj",
+            "image_alt_3": "../assets/models/harpoon/harpoon_lvl4.png",
+            "mesh_alt_4": "../assets/models/harpoon/harpoon_lvl5.obj",
+            "image_alt_4": "../assets/models/harpoon/harpoon_lvl5.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "is_multi_model" : true,
+            "model_count" : 6,
+
+            "is_dynamic": true,
+            "is_rigid": false,
             "velocity_2d": [0, 0],
-            "max_speed": 0,
+            "max_speed": 1000,
+            "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 0,
+            "friction": 0.0,
             "bounding_box": "undefined"
         }
     },
     {
         "type_id": "12",
         "materials": {
-            "mesh": "",
-            "image": ""
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
-            "velocity_2d": [0, 0],
-            "max_speed": 0,
-            "acceleration_2d": [0, 0],
-            "friction": 0,
-            "bounding_box": "undefined"
         }
     },
     {
         "type_id": "13",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/models/harpoon/arrow.obj",
+            "image": "../assets/models/harpoon/arrow.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "is_dynamic": true,
+            "is_rigid": false,
             "velocity_2d": [0, 0],
-            "max_speed": 0,
+            "max_speed": 35,
+            "can_bypass_max_speed": true,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 0,
+            "friction": 0.0,
             "bounding_box": "undefined"
         }
     },
     {
         "type_id": "14",
         "materials": {
-            "mesh": "",
-            "image": ""
+            "mesh": "../assets/models/bubble/bubble.obj",
+            "image": "../assets/models/bubble/bubble.png"
         },
         "properties": {
-            "isDynamic": false,
-            "isRigid": false,
+            "model_scale" : 0.5,
+            "is_dynamic": true,
+            "is_rigid": false,
             "velocity_2d": [0, 0],
-            "max_speed": 0,
+            "max_speed": 15,
+            "can_bypass_max_speed": true,
             "acceleration_2d": [0, 0],
-            "friction": 0,
+            "acceleration": 0,
+            "friction": 0.0,
             "bounding_box": "undefined"
         }
     }

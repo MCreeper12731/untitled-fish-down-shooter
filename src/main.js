@@ -2,20 +2,15 @@ import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
 import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 import { Game } from './game_engine/Game.js';
 import { GUI } from 'dat';
+import { GameInstance_tool } from './game_engine/GameInstance.js';
 
 const game = new Game();
 await game.load();
-await game.create_instance(3, [0,-10], 1, 0, {
-    isDynamic : true,
-    isRigid : false,
-    velocity_2d : [0, 0],
-    max_speed : 200,
-    acceleration_2d : [100, 0],
-    friction : 0.1
-});
 
-//game.remove_instance(1);
+await game.spawn_enemy(GameInstance_tool.type_enum.ENEMY_STANDARD, 0, 10, 0);
+await game.spawn_enemy(GameInstance_tool.type_enum.ENEMY_TANK, 30, 10, 0);
 
+await game.create_instance(GameInstance_tool.type_enum.TREE_FOLIAGE, [10, 20], 0, 0);
 
 //necessary to have these in this specific script
 const canvas = game.get_canvas();

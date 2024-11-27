@@ -4,7 +4,7 @@
 @fragment
 fn fragment_main(@location(0) fragTexCoord: vec2<f32>) -> @location(0) vec4<f32> {
 
-    let downsample_scale = 4.0;
+    let downsample_scale = 2.0;
 
     let texSize = vec2<f32>(textureDimensions(sceneTexture));
     let dims = texSize / downsample_scale;

@@ -117,6 +117,16 @@ export class TopDownController {
             camTransform.translation[1],
             this.game_instance.world_position[1] - this.cam_offset[1]
         ];
+
+        this.check_click(t, dt);
+    }
+
+    check_click(t, dt){
+
+        if (this.keys['MouseLeft']) {
+            this.game_instance.click?.(t, dt);
+        }
+
     }
 
     updateState(t, dt) {
@@ -139,37 +149,46 @@ export class TopDownController {
         const forward = [this.rotation_offset.sin, this.rotation_offset.cos];
         const right = [-this.rotation_offset.cos, this.rotation_offset.sin];
 
-        const acceleration_2d = vec2.create();
+        const acceleration_dir = vec2.create();
         if (this.keys['KeyW']) {
-            vec2.add(acceleration_2d, acceleration_2d, forward);
+            vec2.add(acceleration_dir, acceleration_dir, forward);
         }
         if (this.keys['KeyS']) {
-            vec2.sub(acceleration_2d, acceleration_2d, forward);
+            vec2.sub(acceleration_dir, acceleration_dir, forward);
         }
         if (this.keys['KeyD']) {
-            vec2.add(acceleration_2d, acceleration_2d, right);
+            vec2.add(acceleration_dir, acceleration_dir, right);
         }
         if (this.keys['KeyA']) {
-            vec2.sub(acceleration_2d, acceleration_2d, right);
+            vec2.sub(acceleration_dir, acceleration_dir, right);
         }
         if (this.keys['ShiftLeft'] && this.dash.cooldown_left <= 0) {
             this.dash.cooldown_left = this.dash.cooldown_total;
         }
-
-        vec2.normalize(acceleration_2d, acceleration_2d);
-        vec2.scale(acceleration_2d, acceleration_2d, 0.05);
         
-        let node_properties = this.game_instance.properties;
+        vec2.normalize(acceleration_dir, acceleration_dir);
 
+        let node_properties = this.game_instance.properties;
+        const acceleration_constant = node_properties.acceleration;
+
+        if (vec2.length(acceleration_dir) > 0){
+            const acc_vec = vec2.clone(acceleration_dir);
+            vec2.scale(acc_vec, acc_vec, acceleration_constant);
+            node_properties.acceleration_2d = acc_vec;
+        } else {
+            node_properties.acceleration_2d = [0,0];
+        }
+        
         if (this.dash.cooldown_total - this.dash.cooldown_left < this.dash.speed_increase_duration) {
-            vec2.scale(acceleration_2d, acceleration_2d, this.dash.speed_increase);
+            vec2.scale(acceleration_dir, acceleration_dir, this.dash.speed_increase);
+            node_properties.acceleration_2d = acceleration_dir;
             node_properties.can_bypass_max_speed = true;
         } else {
             node_properties.can_bypass_max_speed = false;
         }
         if (this.dash.cooldown_left > 0) this.dash.cooldown_left -= dt;
         
-        node_properties.acceleration_2d = acceleration_2d;
+        
     }
 
     mousedown_handler(event) {

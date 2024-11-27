@@ -12,7 +12,7 @@ import {
     Vertex,
 } from 'engine/core.js';
 
-import { GameInstance_type, GameInstance, GameInstance_tool } from './GameInstance.js';
+import { GameInstance_type, GameInstance, GameInstance_tool, StandardEnemy, TankEnemy, WaveCrate, Player, HarpoonGunWeapon } from './GameInstance.js';
 import { loadResources } from 'engine/loaders/resources.js';
 import { quat, vec3, mat4, vec2 } from 'glm';
 import { GameRenderer } from './GameRenderer.js';
@@ -62,15 +62,22 @@ export class GameLoader {
 
         const game_instances = []
         var id = 0;
+
+
         this.render_scene.traverse(node => {
             const type = node.getComponentOfType(GameInstance_type);
             if (type.type_id <= GameInstance_tool.type_enum.SCENE){
                 return;
             }
+
+            //const transform = node.getComponentOfType(Transform);
+            //console.log(transform);
+
             const instance = this.init_instance(game_ref, id, type.type_id);
             instance.render_node = node
             instance.update_2d_position();
             game_instances.push(instance);
+
             id++;
         });
 
@@ -118,34 +125,98 @@ export class GameLoader {
         //construct into node
         const node = new Node();
         node.addComponent(new Transform());
-        node.addComponent(new Model({
-            primitives: [
-                new Primitive({
-                    mesh: res.mesh,
-                    material: new Material({
-                        baseTexture: new Texture({
-                            image: res.image,
-                            sampler: new Sampler(),
+        node.addComponent(new GameInstance_type(type));
+        
+        const instance = this.init_instance(game_ref, game_ref.next_id, type);
+
+        const model_array = [];
+        const multi_model = instance.properties.is_multi_model;
+        if (multi_model != undefined){
+            const model_count = instance.properties.model_count;
+            const mat_array = []
+            
+            Object.keys(mats).forEach(function(key,index) {
+                mat_array.push(key);
+            });
+
+            for (let i = 0; i < model_count * 2; i+=2){
+                const res = await loadResources({
+                    'mesh': new URL(mats[mat_array[i]], import.meta.url),
+                    'image': new URL(mats[mat_array[i+1]], import.meta.url),
+                });
+                const model = new Model({
+                    primitives: [
+                        new Primitive({
+                            mesh: res.mesh,
+                            material: new Material({
+                                baseTexture: new Texture({
+                                    image: res.image,
+                                    sampler: new Sampler(),
+                                }),
+                            }),
+                        }),
+                    ],
+                });
+                model_array.push(model);
+            }
+            node.addComponent(model_array[0]);
+        } else {
+            const model = new Model({
+                primitives: [
+                    new Primitive({
+                        mesh: res.mesh,
+                        material: new Material({
+                            baseTexture: new Texture({
+                                image: res.image,
+                                sampler: new Sampler(),
+                            }),
                         }),
                     }),
-                }),
-            ],
-        }));
-        node.addComponent(new GameInstance_type(type));
-        this.render_scene.addChild(node);
-        const instance = this.init_instance(game_ref, game_ref.next_id, type);
+                ],
+            });
+            node.addComponent(model);
+        }
+
+
+        const model_scale = instance.properties.model_scale;
+        if (model_scale != undefined){
+            const transform = node.getComponentOfType(Transform);
+            transform.scale = [model_scale, model_scale, model_scale];
+        }
+        const model_elevation = instance.properties.model_elevation;
+        if (model_elevation != undefined){
+            instance.elevation = model_elevation;
+        } else {
+            instance.elevation = elevation;
+        }
+        
         instance.render_node = node;
         instance.world_position = position_2d;
-        instance.elevation = elevation;
+        
         vec2.rotate(instance.facing_direction, instance.facing_direction, [0,0], rotation);
-        instance.properties = properties == undefined ? instance.properties : properties
-        instance.update_3d_position();
+        instance.properties = properties == undefined ? instance.properties : properties;
+        instance.model_buffer = model_array;
 
+        this.render_scene.addChild(node);   
+        instance.update_3d_position();
         return instance;
     }
 
     init_instance(game_ref, id, type){
-        const instance = new GameInstance(game_ref, id, type);
+        var instance;
+        if (type == GameInstance_tool.type_enum.ENEMY_STANDARD){
+            instance = new StandardEnemy(game_ref, id, type);
+        } else if (type == GameInstance_tool.type_enum.ENEMY_TANK){
+            instance = new TankEnemy(game_ref, id, type);
+        } else if (type == GameInstance_tool.type_enum.CRATE){
+            instance = new WaveCrate(game_ref, id, type);
+        } else if (type == GameInstance_tool.type_enum.PLAYER){
+            instance = new Player(game_ref, id, type);
+        } else if (type == GameInstance_tool.type_enum.HARPOON_EMPTY){
+            instance = new HarpoonGunWeapon(game_ref, id, type);
+        } else {
+            instance = new GameInstance(game_ref, id, type);
+        }
         if (type > 0){
             instance.properties = this.instance_init_lookup[type - 1].properties;
         }

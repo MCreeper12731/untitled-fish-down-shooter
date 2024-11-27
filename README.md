@@ -1,10 +1,12 @@
 # untitled-fish-down-shooter
 
-blender files (non exported) v blender_files folderju u root
+STRAH:
+    -fix bounding boxes - load bb from properties.bounding_box, 2 3D vectorja ka sta levo spodi, desno zgori
+    -fix player sticky movement keys, fix player dash not working
 
-vse nase datoteke v src folderju
+BREGAR:
+    -make shooting in multiple directions, add reloading
+    -start working on game loop
 
-modeli in njihove texture v svojih folderjih v assets
-    *gltf scene in njegovi asseti v world folderju
-
-custom js fili v game_engine folderju
+TRSAN:
+    -make world scene, fix textures
