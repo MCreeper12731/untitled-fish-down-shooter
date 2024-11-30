@@ -568,6 +568,7 @@ export class GameRenderer extends BaseRenderer {
         this.device.queue.submit([encoder.finish()]);
     }
 
+    
     renderNode(node, modelMatrix = mat4.create()) {
         const localMatrix = getLocalModelMatrix(node);
         modelMatrix = mat4.multiply(mat4.create(), modelMatrix, localMatrix);

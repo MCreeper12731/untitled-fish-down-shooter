@@ -126,7 +126,7 @@ export class Game {
 
 
     async loadPlayer(){
-        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [0,0], -0.1, 0);
+        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [3,3], -0.1, 0);
         this.loader.loadController(this);
 
         this.player.weapon = await this.create_instance(GameInstance_tool.type_enum.HARPOON_EMPTY, [0,0], 1, 0)
@@ -134,7 +134,6 @@ export class Game {
 
     async create_instance(type, position_2d, elevation, rotation, properties){
         const inst = await this.loader.create_instance(this, type, position_2d, elevation, rotation, properties);
-        this.physics.initialize(inst);
         this.instances.push(inst);
         this.instance_count++;
         this.next_id++;

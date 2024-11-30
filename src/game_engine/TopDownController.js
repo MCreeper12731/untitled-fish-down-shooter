@@ -119,14 +119,18 @@ export class TopDownController {
         ];
 
         this.check_click(t, dt);
+        this.check_reload(t, dt);
     }
 
     check_click(t, dt){
-
         if (this.keys['MouseLeft']) {
             this.game_instance.click?.(t, dt);
         }
-
+    }
+    check_reload(t, dt){
+        if (this.keys['KeyR']) {
+            this.game_instance.reload?.(t, dt);
+        }
     }
 
     updateState(t, dt) {

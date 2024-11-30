@@ -12,13 +12,15 @@ import {
     Vertex,
 } from 'engine/core.js';
 
-import { GameInstance_type, GameInstance, GameInstance_tool, StandardEnemy, TankEnemy, WaveCrate, Player, HarpoonGunWeapon } from './GameInstance.js';
+import { GameInstance_type, GameInstance, GameInstance_tool, StandardEnemy, TankEnemy, WaveCrate, Player, HarpoonGunWeapon, FastEnemy } from './GameInstance.js';
 import { loadResources } from 'engine/loaders/resources.js';
 import { quat, vec3, mat4, vec2 } from 'glm';
 import { GameRenderer } from './GameRenderer.js';
 import { FirstPersonController } from 'engine/controllers/FirstPersonController.js';
 import { Light } from './Light.js';
 import { TopDownController } from './TopDownController.js';
+import { Animator, Keyframe, load_animators } from './Animator.js';
+
 
 
 export class GameLoader {
@@ -75,6 +77,7 @@ export class GameLoader {
 
             const instance = this.init_instance(game_ref, id, type.type_id);
             instance.render_node = node
+            load_animators(node, type.type_id);
             instance.update_2d_position();
             game_instances.push(instance);
 
@@ -126,7 +129,9 @@ export class GameLoader {
         const node = new Node();
         node.addComponent(new Transform());
         node.addComponent(new GameInstance_type(type));
-        
+
+        load_animators(node, type);
+
         const instance = this.init_instance(game_ref, game_ref.next_id, type);
 
         const model_array = [];
@@ -185,7 +190,7 @@ export class GameLoader {
         }
         const model_elevation = instance.properties.model_elevation;
         if (model_elevation != undefined){
-            instance.elevation = model_elevation;
+            instance.elevation = elevation + model_elevation;
         } else {
             instance.elevation = elevation;
         }
@@ -198,7 +203,7 @@ export class GameLoader {
         instance.model_buffer = model_array;
 
         this.render_scene.addChild(node);   
-        instance.update_3d_position();
+        instance.update_3d_position(this.game_ref.game_time, 0);
         return instance;
     }
 
@@ -208,6 +213,8 @@ export class GameLoader {
             instance = new StandardEnemy(game_ref, id, type);
         } else if (type == GameInstance_tool.type_enum.ENEMY_TANK){
             instance = new TankEnemy(game_ref, id, type);
+        } else if (type == GameInstance_tool.type_enum.ENEMY_FAST){
+            instance = new FastEnemy(game_ref, id, type);
         } else if (type == GameInstance_tool.type_enum.CRATE){
             instance = new WaveCrate(game_ref, id, type);
         } else if (type == GameInstance_tool.type_enum.PLAYER){
@@ -218,7 +225,8 @@ export class GameLoader {
             instance = new GameInstance(game_ref, id, type);
         }
         if (type > 0){
-            instance.properties = this.instance_init_lookup[type - 1].properties;
+            const copy = JSON.parse(JSON.stringify(this.instance_init_lookup[type - 1].properties));
+            instance.properties = copy;
         }
         return instance;
     }   

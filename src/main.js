@@ -8,9 +8,10 @@ const game = new Game();
 await game.load();
 
 await game.spawn_enemy(GameInstance_tool.type_enum.ENEMY_STANDARD, 0, 10, 0);
-await game.spawn_enemy(GameInstance_tool.type_enum.ENEMY_TANK, 30, 10, 0);
+await game.spawn_enemy(GameInstance_tool.type_enum.ENEMY_TANK, 10, 20, 0);
+await game.spawn_enemy(GameInstance_tool.type_enum.ENEMY_FAST, 0, 30, 0);
 
-await game.create_instance(GameInstance_tool.type_enum.TREE_FOLIAGE, [10, 20], 0, 0);
+console.log(game.instances);
 
 //necessary to have these in this specific script
 const canvas = game.get_canvas();
