@@ -1,5 +1,6 @@
 import { vec3, mat4 } from 'glm';
 import { getGlobalModelMatrix } from 'engine/core/SceneUtils.js';
+import { GameInstance_tool } from './GameInstance.js';
 
 export class Physics {
 
@@ -15,7 +16,9 @@ export class Physics {
                 this.game.instances.forEach(game_instance_other => {
                     if (game_instance_other == undefined) return;
                     if (game_instance !== game_instance_other && game_instance_other.properties.is_rigid) {
-                        this.resolveCollision(game_instance, game_instance_other);
+                        if (this.resolveCollision(game_instance, game_instance_other) == true){
+                            GameInstance_tool.collision_decision(this.game, game_instance, game_instance_other);
+                        }
                     }
                 });
             }
@@ -66,7 +69,12 @@ export class Physics {
         // Check if there is collision.
         const isColliding = this.aabbIntersection(aBox, bBox);
         if (!isColliding) {
-            return;
+            return false;
+        }
+
+        //during certain animations we want collision displacement to be turned off but collisions to still be detected
+        if (game_instance_a.avoid_displacement == true || game_instance_b.avoid_displacement == true) {
+            return true;
         }
 
         // Move node A minimally to avoid collision.
@@ -93,7 +101,7 @@ export class Physics {
         }
 
         vec3.add(game_instance_a.world_position, game_instance_a.world_position, minDirection);
-        
+        return true;
     }
 
 }

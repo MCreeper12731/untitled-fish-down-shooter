@@ -24,7 +24,6 @@ export class Game {
         game_time = 0,
         output_framerate = false,
         fps_timer_ms = 150,
-        last_frame_t = 0,
         displaying_progress = false,
         wave_progress = 0.0,
         wave_enemy_count = 10,
@@ -60,16 +59,18 @@ export class Game {
         }
 
         //game loop
-        this.wave_progress = wave_progress;
-        this.displaying_progress = displaying_progress;
-        this.next_wave_enemy_count = wave_enemy_count;
-        this.cur_wave_enemy_count = 0;
+        this.wave_progress = wave_progress;                 //% of wave defeated [0-1]
+        this.displaying_progress = displaying_progress;     //bool if you want the UI to draw progress bar
+        this.next_wave_enemy_count = wave_enemy_count;      //count of how many to spawn during entire wave
+        this.cur_wave_enemy_count = 0;                      //count of how many enemies have been spawned so far
+        this.cur_enemy_killed = 0;                          //count of how many enemies have been killed
 
         this.game_state_enum = {
-            GAME_RESET:0,
+            WAVE_RESET: 0,
             IDLE : 1,
             WAVE_BEGINNING : 2,
             WAVE_IN_PROGRESS : 3,
+            WAVE_END : 4,
         };
 
     }
@@ -78,24 +79,63 @@ export class Game {
         this.game_time = t; 
 
         switch (this.state){
-            case this.game_state_enum.GAME_RESET:
-                this.create_instance(GameInstance_tool.type_enum.CRATE, [0,0], 20, 0);
+            case this.game_state_enum.WAVE_RESET:
+                this.create_instance(GameInstance_tool.type_enum.CRATE, [0,0], 40, 0);
                 this.state = this.game_state_enum.IDLE;
                 break;
             case this.game_state_enum.IDLE:
                 break;
             case this.game_state_enum.WAVE_BEGINNING:
+                //setting up data for wave
+                this.displaying_progress = true;
+                this.wave_progress = 0.0;
+                this.next_wave_enemy_count = 3;
+
+                //start next wave
+                this.state = this.game_state_enum.WAVE_IN_PROGRESS;
                 break;
             case this.game_state_enum.WAVE_IN_PROGRESS:
+
+                this.spawn_enemies();
+                if (this.cur_enemy_killed == this.next_wave_enemy_count){
+                    this.state = this.game_state_enum.WAVE_END;
+                }
+                break;
+            case this.game_state_enum.WAVE_END:
+                this.displaying_progress = false;
+                this.wave_progress = 0.0;
+                this.cur_enemy_killed = 0;
+                this.cur_wave_enemy_count = 0;
+                this.next_wave_enemy_count = 3; // spawn logic - TODO
+                this.state = this.game_state_enum.WAVE_RESET;
                 break;
             default:
                 console.log("game stateless error");
         }
 
-
-
         this.physics.update(t, dt);
         this.update_scene(t, dt);
+    }
+
+    spawn_enemies(){
+        //main enemy spawning logic - TODO
+        if (this.cur_wave_enemy_count < this.next_wave_enemy_count){
+            this.spawn_enemy(GameInstance_tool.type_enum.ENEMY_STANDARD, 0, 10, 0);
+            this.spawn_enemy(GameInstance_tool.type_enum.ENEMY_TANK, 10, 20, 0);
+            this.spawn_enemy(GameInstance_tool.type_enum.ENEMY_FAST, 0, 30, 0);
+            this.cur_wave_enemy_count += 3;
+        }
+        
+        
+    }
+
+    enemy_death_event(id, type){
+        this.cur_enemy_killed += 1;
+        this.wave_progress = (this.cur_enemy_killed / this.next_wave_enemy_count);
+    }
+
+    crate_break_event(){
+        this.state = this.game_state_enum.WAVE_BEGINNING;
     }
 
     update_scene(t, dt){
@@ -126,7 +166,7 @@ export class Game {
 
 
     async loadPlayer(){
-        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [0,0], -0.1, 0);
+        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [3,3], -0.1, 0);
         this.loader.loadController(this);
 
         this.player.weapon = await this.create_instance(GameInstance_tool.type_enum.HARPOON_EMPTY, [0,0], 1, 0)
