@@ -52,25 +52,50 @@ export const GameInstance_tool = Object.freeze({
     
     collision_decision : function (game, inst1, inst2){
         if (inst1.type == this.type_enum.HARPOON_PROJECTILE && inst2 instanceof Enemy) {
-            inst2.take_damage();
+            inst2.take_damage(1);
             game.remove_instance(inst1.id);
         } else if (inst2.type == this.type_enum.HARPOON_PROJECTILE && inst1 instanceof Enemy){
-            inst1.take_damage();
+            inst1.take_damage(1);
             game.remove_instance(inst2.id);
         } else if (inst1.type == this.type_enum.HARPOON_PROJECTILE){
             //hit normal rigid body
             inst1.properties.velocity_2d = vec2.create();
+            inst1.properties.is_dynamic = false;
+            inst1.properties.is_rigid = false;
+            this.transfer_render_node(inst2, inst1);
+            game.remove_instance(inst1.id);
         } else if (inst1.type == this.type_enum.PLAYER && inst2.type == this.type_enum.BUBBLE_PROJECTILE){
-            inst1.take_damage();
+            inst1.take_damage(1);
             game.remove_instance(inst2.id);
         } else if (inst2.type == this.type_enum.PLAYER && inst1.type == this.type_enum.BUBBLE_PROJECTILE) {
-            inst2.take_damage();
+            inst2.take_damage(1);
             game.remove_instance(inst1.id);
         }
 
-    }
+    },
 
-    
+    transfer_render_node : function (parent_inst, child_inst){
+        parent_inst.render_node.addChild(child_inst.render_node);
+        const parent_transform = parent_inst.render_node.getComponentOfType(Transform);
+        const child_transform = child_inst.render_node.getComponentOfType(Transform);
+        //fix scale
+        child_transform.scale[0] = child_transform.scale[0] / parent_transform.scale[0];
+        child_transform.scale[1] = child_transform.scale[1] / parent_transform.scale[1];
+        child_transform.scale[2] = child_transform.scale[2] / parent_transform.scale[2];
+        //fix translation
+        child_transform.translation[0] = (parent_transform.translation[0] - child_transform.translation[0]) * child_transform.scale[0];
+        if (child_transform.translation[1] > parent_transform.translation[1]){
+            child_transform.translation[1] = (child_transform.translation[1] - parent_transform.translation[1]) * child_transform.scale[1];
+        } else {
+            child_transform.translation[1] = (parent_transform.translation[1] - child_transform.translation[1]) * child_transform.scale[1];
+        }
+        child_transform.translation[2] = (parent_transform.translation[2] - child_transform.translation[2]) * child_transform.scale[2];
+        //fix rotation
+        const new_rot = quat.clone(parent_transform.rotation);
+        quat.invert(new_rot, new_rot);
+        quat.multiply(new_rot, new_rot, child_transform.rotation);
+        child_transform.rotation = new_rot;
+    }
 
 });
 
@@ -99,6 +124,7 @@ export class GameInstance{
             friction : 0,
             bounding_box : undefined,
         },
+        avoid_displacement = false,
         render_node = undefined
     } = {}) {
         this.model_buffer = [];
@@ -110,6 +136,7 @@ export class GameInstance{
         this.elevation = elevation;
         this.properties = properties;
         this.render_node = render_node;
+        this.avoid_displacement = avoid_displacement;
     }
 
     update(t, dt){
@@ -211,16 +238,22 @@ export class GameInstance{
 
 export class WaveCrate extends GameInstance{
     constructor(game_ref, id, type, {
-        gravity = 9.81,
+        gravity = 10,
+        start_y_vel = -20,
     } = {}) {
         super(game_ref, id, type);
         this.gravity = gravity;
-        this.y_velocity = 0;
+        this.y_velocity = start_y_vel;
     }
+
+    take_damage(damage){
+        this.game_ref.crate_break_event();
+        this.game_ref.remove_instance(this.id);
+    }   
 
     update(t, dt){
         if (this.elevation > this.properties.model_elevation){
-            this.y_velocity -= this.gravity * dt; 
+            this.y_velocity -= this.gravity * dt;
             this.elevation += this.y_velocity * dt;
             if (this.elevation < this.properties.model_elevation) this.elevation = this.properties.model_elevation;
         }
@@ -239,6 +272,7 @@ export class Player extends GameInstance{
         reload_length = 0.3,
         cur_weapon_load = 0,
         max_weapon_load = 5,
+        melee_attack_range = 3,
 
         player_state_enum = {
             PLAYER_IDLE : 0,
@@ -255,13 +289,14 @@ export class Player extends GameInstance{
         this.melee_cooldown = melee_cooldown;
         this.reload_length = reload_length;
         this.melee_timer = 0;
+        this.melee_attack_range = melee_attack_range;
         this.reload_timer = 0;
         this.cur_weapon_load = cur_weapon_load;
         this.max_weapon_load = max_weapon_load;
         this.player_state_enum = player_state_enum;
     }
 
-    take_damage(){
+    take_damage(damage){
         console.log("player took damage");
     }
 
@@ -299,10 +334,44 @@ export class Player extends GameInstance{
                     this.melee_timer = t + this.melee_cooldown;
                     this.weapon.melee_animation();
                     this.melee_animation();
+                    this.attempt_melee();
                 }
                 break;
             default:
                 break;
+        }
+    }
+
+    attempt_melee(){
+        const scan_size = 1;
+        const range = this.melee_attack_range;
+
+        const looking_dir = vec2.clone(this.facing_direction);
+        looking_dir[0] = -looking_dir[0];
+        vec2.scale(looking_dir, looking_dir, range);
+        const attack_location = vec2.fromValues(this.world_position[0], this.world_position[1]);
+        vec2.add(attack_location, attack_location, looking_dir);
+
+        const attack_3d_min = vec3.create();
+        attack_3d_min[0] = attack_location[0] - scan_size;
+        attack_3d_min[2] = attack_location[1] - scan_size;
+        attack_3d_min[1] = -2;
+        const attack_3d_max = vec3.create();
+        attack_3d_max[0] = attack_location[0] + scan_size;
+        attack_3d_max[2] = attack_location[1] + scan_size;
+        attack_3d_max[1] = 10;
+        const attack_bb = {min : attack_3d_min, max : attack_3d_max};
+
+        for (let i = 0; i < this.game_ref.instances.length; i++){
+            const instance = this.game_ref.instances[i];
+            if (instance == undefined || instance === this.game_ref.player || instance.properties.is_rigid != true) continue;
+
+            const inst_bb = this.game_ref.physics.getTransformedAABB(instance);
+            if (this.game_ref.physics.aabbIntersection(inst_bb, attack_bb) == true){
+                instance.take_damage?.(2);
+                break;
+            }
+
         }
     }
 
@@ -539,9 +608,10 @@ export class Enemy extends GameInstance{
         this.ranged_timer = 0;
     }
 
-    take_damage(){
-        this.health -= 1;
+    take_damage(damage){
+        this.health -= damage;
         if (this.health <= 0){
+            this.game_ref.enemy_death_event(this.id, this.type);
             this.game_ref.remove_instance(this.id);
         }
     }
@@ -631,13 +701,38 @@ export class Enemy extends GameInstance{
 
         if (dist < this.melee_attack_range){
             this.melee_duration_timer = t + this.melee_attack_duration;
+            this.avoid_displacement = true;
             this.melee_animation();
         }
     }
 
-    scan_for_melee_attack(){
-        console.log("scanning for melee hit");
-        return false;
+    scan_for_melee_attack(scan_size){
+
+        const range = this.melee_attack_range;
+
+        const player_dir = this.player_dir();
+        vec2.scale(player_dir, player_dir, range);
+        const attack_location = vec2.fromValues(this.world_position[0], this.world_position[1]);
+        vec2.add(attack_location, attack_location, player_dir);
+
+        const attack_3d_min = vec3.create();
+        attack_3d_min[0] = attack_location[0] - scan_size;
+        attack_3d_min[2] = attack_location[1] - scan_size;
+        attack_3d_min[1] = -2;
+        const attack_3d_max = vec3.create();
+        attack_3d_max[0] = attack_location[0] + scan_size;
+        attack_3d_max[2] = attack_location[1] + scan_size;
+        attack_3d_max[1] = 10;
+        
+        const attack_bb = {min : attack_3d_min, max : attack_3d_max};
+        const player_bb = this.game_ref.physics.getTransformedAABB(this.game_ref.player);
+
+        const hit = this.game_ref.physics.aabbIntersection(player_bb, attack_bb);
+        if (hit == true){
+            this.game_ref.player.take_damage();
+        }
+
+        return hit;
     }
 }
 
@@ -649,6 +744,7 @@ export class StandardEnemy extends Enemy{
         //enemy type specific
         super.melee_attack_duration = 1;
         super.melee_attack_cooldown = 2;
+        super.melee_attack_range = 6;
         super.health = 2;
         super.state = this.state_enum.CHASE_PLAYER;
         this.ranged_duration_timer = 0;
@@ -680,6 +776,7 @@ export class StandardEnemy extends Enemy{
             case this.state_enum.MELEE_ATTACK:
                 if (t > this.melee_duration_timer){
                     //ended melee attack
+                    this.avoid_displacement = false;
                     if (this.melee_successful == true){
                         //start running again
                         this.running_animation(true);
@@ -691,9 +788,9 @@ export class StandardEnemy extends Enemy{
                         this.state = this.state_enum.POSITION_FOR_RANGED;
                     }
                     this.attempted_melee = false;
-                } else if ((this.melee_duration_timer - t) > this.melee_attack_duration / 2 && this.attempted_melee == false){
+                } else if ((this.melee_duration_timer - t) < this.melee_attack_duration / 3 && this.attempted_melee == false){
                     //register if hit player
-                    this.melee_successful = this.scan_for_melee_attack();
+                    this.melee_successful = this.scan_for_melee_attack(1);
                     this.attempted_melee = true;
                 }
                 break;
@@ -758,7 +855,7 @@ export class TankEnemy extends Enemy {
         this.player = game_ref.player;
         
         //enemy type specific
-        super.melee_attack_range = 15;
+        super.melee_attack_range = 10;
         super.melee_attack_duration = 1;
         super.melee_attack_cooldown = 3;
         super.health = 10;
@@ -782,12 +879,13 @@ export class TankEnemy extends Enemy {
             case this.state_enum.MELEE_ATTACK:
                 if (t > this.melee_duration_timer){
                     //ended melee attack
+                    this.avoid_displacement = false;
                     this.running_animation(true);
                     this.state = this.state_enum.CHASE_PLAYER;
                     this.attempted_melee = false;
                 } else if ((this.melee_duration_timer - t) > this.melee_attack_duration / 2 && this.attempted_melee == false){
                     //register if hit player
-                    this.melee_successful = this.scan_for_melee_attack();
+                    this.melee_successful = this.scan_for_melee_attack(1.5);
                     this.attempted_melee = true;
                 }
                 break;
@@ -830,12 +928,13 @@ export class FastEnemy extends Enemy {
             case this.state_enum.MELEE_ATTACK:
                 if (t > this.melee_duration_timer){
                     //ended melee attack
+                    this.avoid_displacement = false;
                     this.running_animation(true);
                     this.state = this.state_enum.CHASE_PLAYER;
                     this.attempted_melee = false;
                 } else if ((this.melee_duration_timer - t) > this.melee_attack_duration / 2 && this.attempted_melee == false){
                     //register if hit player
-                    this.melee_successful = this.scan_for_melee_attack();
+                    this.melee_successful = this.scan_for_melee_attack(2);
                     this.attempted_melee = true;
                 }
                 break;

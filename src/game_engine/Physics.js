@@ -72,6 +72,11 @@ export class Physics {
             return false;
         }
 
+        //during certain animations we want collision displacement to be turned off but collisions to still be detected
+        if (game_instance_a.avoid_displacement == true || game_instance_b.avoid_displacement == true) {
+            return true;
+        }
+
         // Move node A minimally to avoid collision.
         const diffa = vec3.sub(vec3.create(), bBox.max, aBox.min);
         const diffb = vec3.sub(vec3.create(), aBox.max, bBox.min);
