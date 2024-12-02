@@ -509,7 +509,6 @@ export function load_animators(node, type){
                     relative_rot : vec3.fromValues(0,0,0),
                     runtime : 0.1
                 }),
-
             ];
             run_shrimp.add_keyframes(run_shrimp_keyframes);
             node.addComponent(run_shrimp);
@@ -534,6 +533,27 @@ export function load_animators(node, type){
             melee_shrimp.add_keyframes(melee_shrimp_keyframes);
             node.addComponent(melee_shrimp);
             node.addComponent(melee_shrimp.transform);
+            break;
+        case GameInstance_tool.type_enum.BOLT_PICKUP:
+            const animate_foat = new Animator(node, "floating_animation");
+            const animate_foat_keyframes = [
+                new Keyframe({
+                    relative_trans : vec3.fromValues(0,2,0),
+                    relative_scale : vec3.fromValues(1,1,1),
+                    relative_rot : vec3.fromValues(0,180,0),
+                    runtime : 5
+                }),
+                new Keyframe({
+                    relative_trans : vec3.fromValues(0,0,0),
+                    relative_scale : vec3.fromValues(1,1,1),
+                    relative_rot : vec3.fromValues(0,360,0),
+                    runtime : 5
+                }),
+            ];
+            animate_foat.add_keyframes(animate_foat_keyframes);
+            node.addComponent(animate_foat);
+            node.addComponent(animate_foat.transform);
+            animate_foat.start_animation();
             break;
         default:
             break;
