@@ -23,6 +23,7 @@ export class TopDownController {
                 acceleration_modifier_length : 0.1,
                 acceleration_original : game_instance.properties.acceleration
             },
+
             keymap = {
                 "MouseLeft": States.ATTACKING,
                 "KeyR": States.RELOADING,

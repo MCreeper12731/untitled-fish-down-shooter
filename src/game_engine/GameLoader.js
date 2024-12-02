@@ -68,12 +68,9 @@ export class GameLoader {
 
         this.render_scene.traverse(node => {
             const type = node.getComponentOfType(GameInstance_type);
-            if (type.type_id <= GameInstance_tool.type_enum.SCENE){
+            if (type.type_id <= 1){
                 return;
             }
-
-            //const transform = node.getComponentOfType(Transform);
-            //console.log(transform);
 
             const instance = this.init_instance(game_ref, id, type.type_id);
             instance.render_node = node
@@ -113,7 +110,9 @@ export class GameLoader {
 
 
     loadController(game_ref){
-        const camera = this.loadNode('Camera');
+        const camera = new Node();
+        camera.addComponent(new Camera(game_ref.camera_settings));
+        camera.addComponent(new Transform());
         camera.addComponent(new TopDownController(game_ref.player, camera, this.canvas));
         game_ref.camera = camera;
         this.render_scene.addChild(camera);

@@ -28,6 +28,15 @@ export class Game {
         wave_progress = 0.0,
         wave_enemy_count = 10,
 
+        camera_settings = {
+            aspect : 1.57592444126543,
+            far: 1000,
+            fovy : 1.024778957977204,
+            half : 1,
+            near : 0.10000000149011612,
+            orthographic : 0
+        },
+
         camera = undefined,
         player = undefined,
         light = undefined,
@@ -46,6 +55,8 @@ export class Game {
         this.last_frame_t = 0;
         
         //coding
+        this.camera_settings = camera_settings;
+
         this.player = player;
         this.camera = camera;
         this.light = light;

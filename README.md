@@ -1,12 +1,19 @@
 # untitled-fish-down-shooter
 
 STRAH:
-    -fix bounding boxes - load bb from properties.bounding_box, 2 3D vectorja ka sta levo spodi, desno zgori
-    -fix player sticky movement keys, fix player dash not working
+    -fix movement - player speed not being set properly
+    -make spawning game loop
 
 BREGAR:
-    -make shooting in multiple directions, add reloading
-    -start working on game loop
+    -finally link UI sprites to ammo loaded
+    -make bolt pickup after crate break
+    -make damage animations
 
 TRSAN:
     -make world scene, fix textures
+
+
+QUALITY OF LIFE FEATURES AFTER WE GO INTO ALPHA:
+    -particle effects for running and bubble projectile, enemy blood when hit
+    -post processing - color correction, gamma correction
+    -possibly sound effects??? we do have clearly defined functions to just call a sound effect general function on

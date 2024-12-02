@@ -139,7 +139,7 @@
             "is_dynamic": true,
             "is_rigid": true,
             "velocity_2d": [0, 0],
-            "max_speed": 10,
+            "max_speed": 1,
             "can_bypass_max_speed": false,
             "acceleration_2d": [0, 0],
             "acceleration": 200,
