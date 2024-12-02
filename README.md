@@ -5,8 +5,6 @@ STRAH:
     -make spawning game loop
 
 BREGAR:
-    -finally link UI sprites to ammo loaded
-    -make bolt pickup after crate break
     -make damage animations
 
 TRSAN:

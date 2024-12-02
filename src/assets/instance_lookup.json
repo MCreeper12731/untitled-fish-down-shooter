@@ -256,6 +256,19 @@
             "image": "../assets/models/harpoon/arrow.png"
         },
         "properties": {
+            "model_scale" : 0.6,
+            "is_dynamic": false,
+            "is_rigid": true,
+            "velocity_2d": [0, 0],
+            "max_speed": 0,
+            "can_bypass_max_speed": false,
+            "acceleration_2d": [0, 0],
+            "acceleration": 0,
+            "friction": 0.0,
+            "bounding_box": {
+                "min": [-0.5, -0.5, -0.5],
+                "max": [0.5, 0.5, 0.5]
+            }
         }
     },
     {

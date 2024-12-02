@@ -35,7 +35,7 @@ export const GameInstance_tool = Object.freeze({
         ENEMY_FAST: 9,
         ENEMY_TANK: 10,
         HARPOON_EMPTY: 11,
-        LEGACY_DO_NOT_INSTANTIATE: 12,
+        BOLT_PICKUP: 12,
         HARPOON_PROJECTILE: 13,
         BUBBLE_PROJECTILE: 14
     },
@@ -69,6 +69,12 @@ export const GameInstance_tool = Object.freeze({
             game.remove_instance(inst2.id);
         } else if (inst2.type == this.type_enum.PLAYER && inst1.type == this.type_enum.BUBBLE_PROJECTILE) {
             inst2.take_damage(1);
+            game.remove_instance(inst1.id);
+        } else if (inst1.type == this.type_enum.PLAYER && inst2.type == this.type_enum.BOLT_PICKUP){
+            inst1.pickup_bolt(1);
+            game.remove_instance(inst2.id);
+        } else if (inst2.type == this.type_enum.PLAYER && inst1.type == this.type_enum.BOLT_PICKUP) {
+            inst2.pickup_bolt(1);
             game.remove_instance(inst1.id);
         }
 
@@ -247,9 +253,20 @@ export class WaveCrate extends GameInstance{
         }
         super.update(t, dt);
     }
-
-
 }
+
+export class BoltPickup extends GameInstance{
+    constructor(game_ref, id, type, {
+    } = {}) {
+        super(game_ref, id, type);
+    }
+
+    update(t, dt){
+        
+        super.update(t, dt);
+    }
+}
+
 
 export class Player extends GameInstance{
     constructor(game_ref, id, type, {
@@ -259,7 +276,8 @@ export class Player extends GameInstance{
         melee_cooldown = 0.7,
         reload_length = 0.3,
         cur_weapon_load = 0,
-        max_weapon_load = 5,
+        max_weapon_load = 0,
+        weapon_load_cap = 5,
         melee_attack_range = 3,
 
         player_state_enum = {
@@ -281,11 +299,19 @@ export class Player extends GameInstance{
         this.reload_timer = 0;
         this.cur_weapon_load = cur_weapon_load;
         this.max_weapon_load = max_weapon_load;
+        this.weapon_load_cap = weapon_load_cap;
         this.player_state_enum = player_state_enum;
     }
 
     take_damage(damage){
         console.log("player took damage");
+    }
+
+    pickup_bolt(num){
+        if (this.max_weapon_load + num <= this.weapon_load_cap){
+            this.max_weapon_load += num;
+        }
+        this.game_ref.bolt_pickup_event();
     }
 
     reload(t, dt){
@@ -433,6 +459,7 @@ export class Player extends GameInstance{
                 break;
         }
 
+        this.game_ref.UI_data.weapon_ui_variation = this.cur_weapon_load;
         this.stick_to_player(t, dt);
         super.update(t,dt);
     }

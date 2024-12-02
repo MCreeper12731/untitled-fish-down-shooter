@@ -12,7 +12,7 @@ import {
     Vertex,
 } from 'engine/core.js';
 
-import { GameInstance_type, GameInstance, GameInstance_tool, StandardEnemy, TankEnemy, WaveCrate, Player, HarpoonGunWeapon, FastEnemy } from './GameInstance.js';
+import { GameInstance_type, GameInstance, GameInstance_tool, StandardEnemy, TankEnemy, WaveCrate, Player, HarpoonGunWeapon, FastEnemy, BoltPickup } from './GameInstance.js';
 import { loadResources } from 'engine/loaders/resources.js';
 import { quat, vec3, mat4, vec2 } from 'glm';
 import { GameRenderer } from './GameRenderer.js';
@@ -220,6 +220,8 @@ export class GameLoader {
             instance = new Player(game_ref, id, type);
         } else if (type == GameInstance_tool.type_enum.HARPOON_EMPTY){
             instance = new HarpoonGunWeapon(game_ref, id, type);
+        } else if (type == GameInstance_tool.type_enum.BOLT_PICKUP){
+            instance = new BoltPickup(game_ref, id, type);
         } else {
             instance = new GameInstance(game_ref, id, type);
         }

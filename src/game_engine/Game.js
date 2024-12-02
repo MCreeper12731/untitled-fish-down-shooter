@@ -66,7 +66,7 @@ export class Game {
             progress_bar_pos_y: 0.04, //in UV space
             weapon_ui_pos_x : 0.03,
             weapon_ui_pos_y : 0.7,
-            weapon_ui_variation: 1
+            weapon_ui_variation: 0
         }
 
         //game loop
@@ -140,13 +140,17 @@ export class Game {
         
     }
 
+    bolt_pickup_event(){
+        this.state = this.game_state_enum.WAVE_BEGINNING;
+    }
+
     enemy_death_event(id, type){
         this.cur_enemy_killed += 1;
         this.wave_progress = (this.cur_enemy_killed / this.next_wave_enemy_count);
     }
 
     crate_break_event(){
-        this.state = this.game_state_enum.WAVE_BEGINNING;
+        this.create_instance(GameInstance_tool.type_enum.BOLT_PICKUP, [0,0], 1.5, 0);
     }
 
     update_scene(t, dt){
