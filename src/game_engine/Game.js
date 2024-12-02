@@ -66,7 +66,7 @@ export class Game {
             progress_bar_pos_y: 0.04, //in UV space
             weapon_ui_pos_x : 0.03,
             weapon_ui_pos_y : 0.7,
-            weapon_ui_variation: 1
+            weapon_ui_variation: 0
         }
 
         //game loop

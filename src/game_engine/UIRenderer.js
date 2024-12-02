@@ -10,9 +10,12 @@ export class UIRenderer {
         this.game_ref = game_ref;
         this.progress_bar_path = 'assets/UI/progress_bar_texture.png';
         this.weapon_UI_path = [
-            'assets/UI/test_weapon_UI_0.png',
-            'assets/UI/test_weapon_UI_1.png',
-            'assets/UI/test_weapon_UI_2.png',
+            'assets/UI/weapon_UI_0_sprite.png',
+            'assets/UI/weapon_UI_1_sprite.png',
+            'assets/UI/weapon_UI_2_sprite.png',
+            'assets/UI/weapon_UI_3_sprite.png',
+            'assets/UI/weapon_UI_4_sprite.png',
+            'assets/UI/weapon_UI_5_sprite.png',
         ];
 
         this.progress_bar_data = new Float32Array([

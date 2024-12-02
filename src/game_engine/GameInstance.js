@@ -451,6 +451,7 @@ export class Player extends GameInstance{
                 break;
         }
 
+        this.game_ref.UI_data.weapon_ui_variation = this.cur_weapon_load;
         this.stick_to_player(t, dt);
         super.update(t,dt);
     }
