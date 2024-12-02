@@ -158,10 +158,7 @@ export class GameInstance{
             }
 
             const speed = vec2.length(new_velocity);
-            if (this.properties.friction === 0.1) {
-                console.log("speed: " + speed + ' ' + this.properties.max_speed)
-
-            }
+            
             if (speed > this.properties.max_speed && !this.properties.can_bypass_max_speed) {
                 const decay = Math.exp(dt * Math.log(1 - this.properties.friction));
                 vec2.scale(new_velocity, new_velocity, decay);
