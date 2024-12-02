@@ -142,49 +142,31 @@ export class GameInstance{
     update(t, dt){
         if (this.properties.is_dynamic === true){
 
-            const current_acceleration = vec2.clone(this.properties.acceleration_2d);
-            const current_velocity = vec2.clone(this.properties.velocity_2d);
+            let new_velocity = vec2.clone(this.properties.velocity_2d)
 
-            //apply acceleration if speed withing bounds
-            const acc_dt = vec2.clone(current_acceleration);
-            vec2.scale(acc_dt, acc_dt, dt);
-            const new_velocity = vec2.clone(current_velocity);
-            vec2.add(new_velocity, new_velocity, acc_dt);
-
-            //unit acceleration vector
-            const acc_norm = vec2.clone(current_acceleration);
-            vec2.normalize(acc_norm, acc_norm);
-            //component of new velocity vector pointing in the direction of acceleration
-            const forward_vel = vec2.clone(acc_norm);
-            const dotProduct = vec2.dot(new_velocity, acc_norm);
-
-            if (vec2.length(new_velocity) < this.properties.max_speed || this.properties.can_bypass_max_speed){
-                
-                vec2.scale(forward_vel, forward_vel, dotProduct);
-
+            vec2.scaleAndAdd(new_velocity, new_velocity, this.properties.acceleration_2d, dt * this.properties.acceleration);
+            if (this.properties.acceleration_2d[0] === 0 && this.properties.acceleration_2d[1] === 0)
+            {
+                const decay = Math.exp(dt * Math.log(1 - this.properties.friction));
+                vec2.scale(new_velocity, new_velocity, decay);
             }
 
-            //component perpendicular to acceleration  - dampen this
-            const dampen_vel = vec2.clone(new_velocity);
-            vec2.subtract(dampen_vel, dampen_vel, forward_vel);
-            const decay = Math.exp(dt * Math.log(1 - this.properties.friction));
-            vec2.scale(dampen_vel, dampen_vel, decay);
+            const speed = vec2.length(new_velocity);
+            if (this.properties.friction === 0.1) {
+                console.log("speed: " + speed + ' ' + this.properties.max_speed)
 
-
-            //combine them back
-            vec2.add(forward_vel, forward_vel, dampen_vel);
-            this.properties.velocity_2d = forward_vel;
-
-
-            //apply final speeds
-            if (vec2.length(this.properties.velocity_2d) < 0.005){
-                vec2.scale(this.properties.velocity_2d, this.properties.velocity_2d, 0);
             }
-            const final_velocity = vec2.clone(this.properties.velocity_2d);
-            vec2.scale(final_velocity, final_velocity, dt);
-            vec2.add(this.world_position, this.world_position, final_velocity);
+            if (speed > this.properties.max_speed && !this.properties.can_bypass_max_speed) {
+                const decay = Math.exp(dt * Math.log(1 - this.properties.friction));
+                vec2.scale(new_velocity, new_velocity, decay);
+            }
+
+            this.properties.velocity_2d = new_velocity
+
+            vec2.scaleAndAdd(this.world_position, this.world_position, this.properties.velocity_2d, dt);
  
         }
+
         this.update_3d_position(t, dt);
 
         //cull projectiles out of world
