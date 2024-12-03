@@ -46,7 +46,8 @@ export const GameInstance_tool = Object.freeze({
         POSITION_FOR_RANGED : 2,
         RANGED_ATTACK : 3,
         DASHING : 4,
-        DODGING : 5
+        DODGING : 5,
+        DEAD : 6
 
     },
     
@@ -596,6 +597,7 @@ export class Enemy extends GameInstance{
         ranged_attack_range_min = 15,
         ranged_attack_range_max = 20,
         ranged_attack_cooldown = 10,
+        death_animation_length = 2,
     } = {}) {
         super(game_ref, id, type);
         this.health = health;
@@ -609,6 +611,7 @@ export class Enemy extends GameInstance{
         this.ranged_attack_range_min = ranged_attack_range_min;
         this.ranged_attack_range_max = ranged_attack_range_max;
         this.ranged_attack_cooldown = ranged_attack_cooldown;
+        this.death_animation_length = death_animation_length;
         this.attempted_melee = false;
         this.melee_successful = false;
 
@@ -618,14 +621,31 @@ export class Enemy extends GameInstance{
         this.melee_duration_timer = 0;
         this.melee_cooldown_timer = 0;
         this.ranged_timer = 0;
+        this.death_animation_timer = 0;
     }
 
     take_damage(damage){
+        if (this.state == this.state_enum.DEAD) return;
+
         this.health -= damage;
+        this.take_damage_animation();
         if (this.health <= 0){
+            this.stop_all_animations();
+            this.properties.velocity_2d = vec2.create();
+            this.properties.acceleration_2d = vec2.create();
+            this.avoid_displacement = true;
+            this.death_animation_timer = this.game_ref.game_time + this.death_animation_length;
+            this.state = this.state_enum.DEAD;
+            this.death_animation();
             this.game_ref.enemy_death_event(this.id, this.type);
-            this.game_ref.remove_instance(this.id);
         }
+    }
+
+    stop_all_animations(){
+        const animators = this.render_node.getComponentsOfType(Animator);
+        animators.forEach(animator => {
+            animator.stop_animation();
+        });
     }
 
     running_animation(start_running){
@@ -637,6 +657,24 @@ export class Enemy extends GameInstance{
                 } else {
                     animator.stop_animation();
                 } 
+            }
+        });
+    }
+
+    death_animation(){
+        const animators = this.render_node.getComponentsOfType(Animator);
+        animators.forEach(animator => {
+            if (animator.label == "death_animation"){
+                animator.run_animation_until_end();
+            }
+        });
+    }
+
+    take_damage_animation(){
+        const animators = this.render_node.getComponentsOfType(Animator);
+        animators.forEach(animator => {
+            if (animator.label == "take_damage_animation"){
+                animator.run_animation_until_end();
             }
         });
     }
@@ -773,7 +811,7 @@ export class StandardEnemy extends Enemy{
     }
 
     update(t, dt){
-        this.track_player(t, dt);
+        if (this.state != this.state_enum.DEAD) this.track_player(t, dt);
 
         switch (this.state) {
             case this.state_enum.CHASE_PLAYER:
@@ -829,6 +867,11 @@ export class StandardEnemy extends Enemy{
                     this.state = this.state_enum.CHASE_PLAYER;
                 }
                 break;
+            case this.state_enum.DEAD:
+                if (t > this.death_animation_timer){
+                    this.game_ref.remove_instance(this.id);
+                }
+                break;
             default:
                 console.log("STATELESS ERROR - " + this.id);
           }
@@ -876,7 +919,7 @@ export class TankEnemy extends Enemy {
     }
 
     update(t, dt){
-        this.track_player(t, dt);
+        if (this.state != this.state_enum.DEAD) this.track_player(t, dt);
 
         switch (this.state) {
             case this.state_enum.CHASE_PLAYER:
@@ -899,6 +942,11 @@ export class TankEnemy extends Enemy {
                     //register if hit player
                     this.melee_successful = this.scan_for_melee_attack(1.5);
                     this.attempted_melee = true;
+                }
+                break;
+            case this.state_enum.DEAD:
+                if (t > this.death_animation_timer){
+                    this.game_ref.remove_instance(this.id);
                 }
                 break;
             default:
@@ -925,7 +973,7 @@ export class FastEnemy extends Enemy {
     }
 
     update(t, dt){
-        this.track_player(t, dt);
+        if (this.state != this.state_enum.DEAD) this.track_player(t, dt);
 
         switch (this.state) {
             case this.state_enum.CHASE_PLAYER:
@@ -948,6 +996,11 @@ export class FastEnemy extends Enemy {
                     //register if hit player
                     this.melee_successful = this.scan_for_melee_attack(2);
                     this.attempted_melee = true;
+                }
+                break;
+            case this.state_enum.DEAD:
+                if (t > this.death_animation_timer){
+                    this.game_ref.remove_instance(this.id);
                 }
                 break;
             default:

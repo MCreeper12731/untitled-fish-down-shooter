@@ -206,6 +206,45 @@ export function load_animators(node, type){
 
     switch (type) {
         case GameInstance_tool.type_enum.ENEMY_STANDARD:
+            //death
+            const death_fish = new Animator(node, "death_animation");
+            const death_fish_keyframes = [
+                new Keyframe({
+                    relative_trans : vec3.fromValues(0,-0.5,0),
+                    relative_scale : vec3.fromValues(1,1,1),
+                    relative_rot : vec3.fromValues(-90,0,0),
+                    runtime : 1
+                }),
+                new Keyframe({
+                    relative_trans : vec3.fromValues(0,-3,0),
+                    relative_scale : vec3.fromValues(1,1,1),
+                    relative_rot : vec3.fromValues(-90,0,0),
+                    runtime : 4
+                }),
+            ];
+            death_fish.add_keyframes(death_fish_keyframes);
+            node.addComponent(death_fish);
+            node.addComponent(death_fish.transform);
+            //take damage
+            const take_damage_fish = new Animator(node, "take_damage_animation");
+            const take_damage_fish_keyframes = [
+                new Keyframe({
+                    relative_trans : vec3.fromValues(0,0,-0.4),
+                    relative_scale : vec3.fromValues(1,1,1),
+                    relative_rot : vec3.fromValues(-10,0,0),
+                    runtime : 0.1
+                }),
+                new Keyframe({
+                    relative_trans : vec3.fromValues(0,0,0),
+                    relative_scale : vec3.fromValues(1,1,1),
+                    relative_rot : vec3.fromValues(0,0,0),
+                    runtime : 0.3
+                }),
+            ];
+            take_damage_fish.add_keyframes(take_damage_fish_keyframes);
+            node.addComponent(take_damage_fish);
+            node.addComponent(take_damage_fish.transform);
+            //running
             const running_fish = new Animator(node, "run_animation", {stop_once_finished : false, run_until_end : false});
             const running_fish_keyframes = [
                 new Keyframe({
@@ -297,6 +336,39 @@ export function load_animators(node, type){
             node.addComponent(idle_fish.transform);
             break;
         case GameInstance_tool.type_enum.ENEMY_TANK:
+            //take damage
+            const death_shark = new Animator(node, "death_animation");
+            const death_shark_keyframes = [
+                new Keyframe({
+                    relative_trans : vec3.fromValues(-50,30*2,0),
+                    relative_scale : vec3.fromValues(1,1,1),
+                    relative_rot : vec3.fromValues(0,0,720*2),
+                    runtime : 5
+                }),
+            ];
+            death_shark.add_keyframes(death_shark_keyframes);
+            node.addComponent(death_shark);
+            node.addComponent(death_shark.transform);
+            //take damage
+            const take_damage_shark = new Animator(node, "take_damage_animation");
+            const take_damage_shark_keyframes = [
+                new Keyframe({
+                    relative_trans : vec3.fromValues(-0.5,0,0),
+                    relative_scale : vec3.fromValues(1,1,1),
+                    relative_rot : vec3.fromValues(0,0,5),
+                    runtime : 0.1
+                }),
+                new Keyframe({
+                    relative_trans : vec3.fromValues(0,0,0),
+                    relative_scale : vec3.fromValues(1,1,1),
+                    relative_rot : vec3.fromValues(0,0,0),
+                    runtime : 0.3
+                }),
+            ];
+            take_damage_shark.add_keyframes(take_damage_shark_keyframes);
+            node.addComponent(take_damage_shark);
+            node.addComponent(take_damage_shark.transform);
+            //running
             const run_shark = new Animator(node, "run_animation");
             const run_shark_keyframes = [
                 new Keyframe({
@@ -483,6 +555,26 @@ export function load_animators(node, type){
             node.addComponent(player_shoot.transform);
             break;
         case GameInstance_tool.type_enum.ENEMY_FAST:
+            //death
+            const death_shrimp = new Animator(node, "death_animation");
+            const death_shrimp_keyframes = [
+                new Keyframe({
+                    relative_trans : vec3.fromValues(0,0,0),
+                    relative_scale : vec3.fromValues(1,1,1),
+                    relative_rot : vec3.fromValues(-30,360,0),
+                    runtime : 0.3
+                }),
+                new Keyframe({
+                    relative_trans : vec3.fromValues(0,-6,0),
+                    relative_scale : vec3.fromValues(1,1,1),
+                    relative_rot : vec3.fromValues(-30,720*4,0),
+                    runtime : 4
+                }),
+            ];
+            death_shrimp.add_keyframes(death_shrimp_keyframes);
+            node.addComponent(death_shrimp);
+            node.addComponent(death_shrimp.transform);
+            //run
             const run_shrimp = new Animator(node, "run_animation");
             const run_shrimp_keyframes = [
                 new Keyframe({
