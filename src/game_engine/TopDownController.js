@@ -13,7 +13,7 @@ export class TopDownController {
 
     constructor(game_instance, camera, canvas, {
             cam_properties = {
-                cam_elevation : 16,
+                cam_elevation : 50,
                 cam_offset : [8, 8],
             },
             dash = {
@@ -239,6 +239,7 @@ export class TopDownController {
     }
 
     keydown_handler(event) {
+        if (event.code === "KeyQ") this.keys["KeyR"] = true;
         this.keys[event.code] = true;
     }
 

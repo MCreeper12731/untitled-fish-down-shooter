@@ -12,6 +12,7 @@ import { Game } from './Game.js';
 import { quat, vec3, mat4, vec2 } from 'glm';
 import * as glm from 'glm';
 import { Animator, Keyframe } from './Animator.js';
+import { player_settings, enemy_settings } from './config.js';
 
 
 
@@ -53,10 +54,32 @@ export const GameInstance_tool = Object.freeze({
     
     collision_decision : function (game, inst1, inst2){
         if (inst1.type == this.type_enum.HARPOON_PROJECTILE && inst2 instanceof Enemy) {
-            inst2.take_damage(1);
+            
+            let damage_factor = 1;
+            if (!(inst2 instanceof TankEnemy))
+                for (const entity of game.instances) {
+                    if (!(entity instanceof TankEnemy)) continue;
+
+                    if (vec2.distance(entity.world_position, inst2.world_position) < 10) {
+                        damage_factor /= enemy_settings.tank.damage_reduction;
+                    }
+                }
+
+            inst2.take_damage(inst1.properties.damage * damage_factor);
             game.remove_instance(inst1.id);
         } else if (inst2.type == this.type_enum.HARPOON_PROJECTILE && inst1 instanceof Enemy){
-            inst1.take_damage(1);
+            
+            let damage_factor = 1;
+            if (!(inst1 instanceof TankEnemy))
+                for (const entity of game.instances) {
+                    if (!(entity instanceof TankEnemy)) continue;
+
+                    if (vec2.distance(entity.world_position, inst1.world_position) < 10) {
+                        damage_factor /= enemy_settings.tank.damage_reduction;
+                    }
+                }
+
+            inst1.take_damage(inst2.properties.damage * damage_factor);
             game.remove_instance(inst2.id);
         } else if (inst1.type == this.type_enum.HARPOON_PROJECTILE){
             //hit normal rigid body
@@ -181,7 +204,7 @@ export class GameInstance{
 
     change_model(change_ind){
         this.render_node.removeComponentsOfType(Model);
-        this.render_node.addComponent(this.model_buffer[change_ind]);
+        this.render_node.addComponent(this.model_buffer[Math.min(5, change_ind)]);
     }
 
     update_2d_position(){
@@ -374,13 +397,12 @@ export class Player extends GameInstance{
         attack_3d_max[1] = 10;
         const attack_bb = {min : attack_3d_min, max : attack_3d_max};
 
-        for (let i = 0; i < this.game_ref.instances.length; i++){
-            const instance = this.game_ref.instances[i];
-            if (instance == undefined || instance === this.game_ref.player || instance.properties.is_rigid != true) continue;
+        for (const instance of this.game_ref.instances){
+            if (instance == undefined || instance === this.game_ref.player || instance.properties.is_rigid !== true) continue;
 
             const inst_bb = this.game_ref.physics.getTransformedAABB(instance);
-            if (this.game_ref.physics.aabbIntersection(inst_bb, attack_bb) == true){
-                instance.take_damage?.(2);
+            if (this.game_ref.physics.aabbIntersection(inst_bb, attack_bb) === true){
+                instance.take_damage?.(player_settings.melee_damage);
                 break;
             }
 
@@ -457,7 +479,7 @@ export class Player extends GameInstance{
                 break;
         }
 
-        this.game_ref.UI_data.weapon_ui_variation = this.cur_weapon_load;
+        this.game_ref.UI_data.weapon_ui_variation = Math.min(5, this.cur_weapon_load);
         this.stick_to_player(t, dt);
         super.update(t,dt);
     }
@@ -569,6 +591,8 @@ export class HarpoonGunWeapon extends GameInstance {
             if (angle < 0) angle += 2 * Math.PI;
         
             vec2.scale(properties.velocity_2d, dir, properties.max_speed);
+
+            properties.damage = player_settings.damage_multiplier ** (this.loaded_count - 1);
 
             this.game_ref.create_instance(GameInstance_tool.type_enum.HARPOON_PROJECTILE, spawn_pos, elevation, angle, properties);
         }
@@ -790,15 +814,15 @@ export class StandardEnemy extends Enemy{
     constructor(game_ref, id, type){
         super(game_ref, id, type);
         this.player = game_ref.player;
+        super.state = this.state_enum.CHASE_PLAYER;
         
         //enemy type specific
-        super.melee_attack_duration = 1;
-        super.melee_attack_cooldown = 2;
-        super.melee_attack_range = 6;
-        super.health = 2;
-        super.state = this.state_enum.CHASE_PLAYER;
-        this.ranged_duration_timer = 0;
-        this.ranged_attack_duration = 1;
+        super.melee_attack_duration = enemy_settings.standard.melee_attack_duration;
+        super.melee_attack_cooldown = enemy_settings.standard.melee_attack_cooldown;
+        super.melee_attack_range = enemy_settings.standard.melee_attack_range;
+        super.health = enemy_settings.standard.health;
+        this.ranged_duration_timer = enemy_settings.standard.ranged_duration_timer;
+        this.ranged_attack_duration = enemy_settings.standard.ranged_attack_duration;
     }
 
     ranged_animation(){
@@ -908,13 +932,13 @@ export class TankEnemy extends Enemy {
     constructor(game_ref, id, type){
         super(game_ref, id, type);
         this.player = game_ref.player;
+        super.state = this.state_enum.CHASE_PLAYER;
         
         //enemy type specific
-        super.melee_attack_range = 10;
-        super.melee_attack_duration = 1;
-        super.melee_attack_cooldown = 3;
-        super.health = 10;
-        super.state = this.state_enum.CHASE_PLAYER;
+        super.melee_attack_range = enemy_settings.tank.melee_attack_range;
+        super.melee_attack_duration = enemy_settings.tank.melee_attack_duration;
+        super.melee_attack_cooldown = enemy_settings.tank.melee_attack_cooldown;
+        super.health = enemy_settings.tank.health;
 
     }
 
@@ -962,13 +986,13 @@ export class FastEnemy extends Enemy {
     constructor(game_ref, id, type){
         super(game_ref, id, type);
         this.player = game_ref.player;
+        super.state = this.state_enum.CHASE_PLAYER;
         
         //enemy type specific
-        super.melee_attack_range = 6;
-        super.melee_attack_duration = 0.5;
-        super.melee_attack_cooldown = 1;
-        super.health = 1;
-        super.state = this.state_enum.CHASE_PLAYER;
+        super.melee_attack_range = enemy_settings.fast.melee_attack_range;
+        super.melee_attack_duration = enemy_settings.fast.melee_attack_duration;
+        super.melee_attack_cooldown = enemy_settings.fast.melee_attack_cooldown;
+        super.health = enemy_settings.fast.health;
 
     }
 

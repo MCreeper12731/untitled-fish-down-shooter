@@ -16,7 +16,7 @@ export class Physics {
                 this.game.instances.forEach(game_instance_other => {
                     if (game_instance_other == undefined) return;
                     if (game_instance !== game_instance_other && game_instance_other.properties.is_rigid) {
-                        if (this.resolveCollision(game_instance, game_instance_other) == true){
+                        if (this.resolveCollision(game_instance, game_instance_other) === true){
                             GameInstance_tool.collision_decision(this.game, game_instance, game_instance_other);
                         }
                     }
