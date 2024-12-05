@@ -63,6 +63,7 @@ export class GameRenderer extends BaseRenderer {
         //post processing
         //this.renderPostProcessingEffect(this.greyscale, this.nearestSampler, this.interTexture1, this.interTexture2);
         //this.renderPostProcessingEffect(this.negative, this.nearestSampler, this.cur_texture_buffer, this.next_texture_buffer);
+        this.renderPostProcessingEffect(this.saturation_gamma, this.nearestSampler, this.cur_texture_buffer, this.next_texture_buffer);
         this.renderPostProcessingEffect(this.downsample, this.linearSampler, this.cur_texture_buffer, this.next_texture_buffer);
         //UI drawing
         this.UIRenderer.drawUI(game_ref, this.cur_texture_buffer, this.next_texture_buffer);
@@ -287,6 +288,20 @@ export class GameRenderer extends BaseRenderer {
             layout: 'auto',
         });
 
+        const saturation_gamma_module = this.device.createShaderModule({ code: await fetch('game_engine/shaders/saturation_gamma.wgsl').then(response => response.text())});
+
+        this.saturation_gamma =  await this.device.createRenderPipelineAsync({
+            vertex: {
+                module: this.postprocess_vertex_module,
+                entryPoint: 'vertex_main',
+            },
+            fragment: {
+                module: saturation_gamma_module,
+                entryPoint: 'fragment_main',
+                targets: [{ format : this.format }],
+            },
+            layout: 'auto',
+        });
     }
 
 
