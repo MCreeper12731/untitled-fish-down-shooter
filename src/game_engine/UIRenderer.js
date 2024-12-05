@@ -1,6 +1,7 @@
 import * as WebGPU from 'engine/WebGPU.js';
 import { loadResources } from 'engine/loaders/resources.js';
 import { ImageLoader } from 'engine/loaders/ImageLoader.js';
+import { elasticEaseIn, bounceEaseIn, stepEaseIn, polyEaseIn, polyEaseInOut } from 'engine/animators/EasingFunctions.js';
 
 export class UIRenderer {
 
@@ -16,6 +17,10 @@ export class UIRenderer {
             'assets/UI/weapon_UI_3_sprite.png',
             'assets/UI/weapon_UI_4_sprite.png',
             'assets/UI/weapon_UI_5_sprite.png',
+        ];
+
+        this.game_tip_UI_path = [
+            'assets/UI/game_tip_0.png',
         ];
 
         this.progress_bar_data = new Float32Array([
@@ -38,6 +43,7 @@ export class UIRenderer {
     drawUI(){
         this.progress_bar_UI();
         this.weapon_UI();
+        this.game_tip_UI();
     }
 
     async init(){
@@ -121,7 +127,6 @@ export class UIRenderer {
             bindGroupLayouts: [this.scene_texture_render_BGlayout, this.sampled_texture_BGLayout],
         });
 
-
         this.reconfigure_ui_positions();
     }
 
@@ -130,6 +135,10 @@ export class UIRenderer {
         this.weapon_UI_textures = [];
         for (let i = 0; i < this.weapon_UI_path.length; i++){
             this.weapon_UI_textures[i] = await this.loadTexture(this.weapon_UI_path[i]);
+        }
+        this.game_tip_UI_textures = [];
+        for (let i = 0; i < this.game_tip_UI_path.length; i++){
+            this.game_tip_UI_textures[i] = await this.loadTexture(this.game_tip_UI_path[i]);
         }
     }
 
@@ -151,10 +160,31 @@ export class UIRenderer {
         return texture;
     }
 
+    game_tip_UI(){
+        if (this.game_ref.game_tip_enabled == false) return;
+
+        const UI_ind = 0;
+        const total_scale = 2;
+        const x_offset = 0.015;
+        const y_offset = 0.03;
+
+        const game_time = this.game_ref.game_time;
+        const duration = this.game_ref.game_tip_animation_duration;
+        const game_tip_scale = (game_time < duration ? polyEaseInOut(game_time) : 1) * total_scale;
+
+        const canvas_width = this.main_renderer.canvas.width;
+        const canvas_height = this.main_renderer.canvas.height;
+        const texture_width_uv = this.game_tip_UI_textures[UI_ind].width / canvas_width;
+        const texture_height_uv = this.game_tip_UI_textures[UI_ind].height / canvas_height;
+
+        const x = 0.5 + x_offset;
+        const y = 0.5 - texture_height_uv + texture_height_uv * (1 - game_tip_scale) - y_offset;
+
+        this.drawTexture(this.game_tip_UI_textures[0], x, y, game_tip_scale, game_tip_scale);
+    }
+
     weapon_UI(){
-
         this.drawTexture(this.weapon_UI_textures[this.game_ref.UI_data.weapon_ui_variation], this.weapon_ui_pos[0], this.weapon_ui_pos[1], 5.0, 5.0);
-
     }
 
     progress_bar_UI(){

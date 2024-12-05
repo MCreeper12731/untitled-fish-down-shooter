@@ -47,7 +47,7 @@ export class Game {
         
         //coding
         this.camera_settings = camera_settings;
-
+        
         this.player = player;
         this.camera = camera;
         this.light = light;
@@ -59,6 +59,8 @@ export class Game {
             weapon_ui_pos_y : 0.7,
             weapon_ui_variation: 0
         }
+        this.game_tip_animation_duration = 1;
+        this.game_tip_enabled = true;
 
         //game loop
         this.wave_progress = wave_progress;                 //% of wave defeated [0-1]
@@ -96,6 +98,9 @@ export class Game {
             case this.game_state_enum.IDLE:
                 break;
             case this.game_state_enum.WAVE_BEGINNING:
+                //disable the game tip
+                this.game_tip_enabled = false;
+
                 //setting up data for wave
                 this.displaying_progress = true;
                 this.wave_progress = 0.0;
