@@ -17,7 +17,7 @@ import { wave_settings, camera_settings } from './config.js'
 
 export class Game {
     constructor( {
-        world_path = 'src/assets/development_tmp/bregar_dev_tmp/world/test_world.gltf',
+        world_path = 'src/assets/world/world_mid.gltf',
         asset_folder = 'assets',
         instance_count = 0,
         next_id = 0,

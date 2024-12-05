@@ -68,9 +68,11 @@ export class GameLoader {
 
         this.render_scene.traverse(node => {
             const type = node.getComponentOfType(GameInstance_type);
+            console.log(id);
             if (type.type_id <= 1){
                 return;
             }
+            
 
             const instance = this.init_instance(game_ref, id, type.type_id);
             instance.render_node = node
