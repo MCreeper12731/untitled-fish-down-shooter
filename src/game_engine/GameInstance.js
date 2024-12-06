@@ -25,8 +25,8 @@ export const GameInstance_tool = Object.freeze({
         SCENE: -2,
         UNDEFINED: -1,
         WORLD_MAP: 0,
-        TREE_FOLIAGE:  1,
-        TREE_DEAD: 2,
+        TREE:  1,
+        UNUSED_DO_NOT_INSTANTIATE: 2,
         ROCK: 3,
         SHOP: 4,
         GRASS: 5,
@@ -81,12 +81,14 @@ export const GameInstance_tool = Object.freeze({
 
             inst1.take_damage(inst2.properties.damage * damage_factor);
             game.remove_instance(inst2.id);
-        } else if (inst1.type == this.type_enum.HARPOON_PROJECTILE){
+        } else if (inst1.type == this.type_enum.HARPOON_PROJECTILE && inst2.type == this.type_enum.CRATE){
             //hit normal rigid body
             inst1.properties.velocity_2d = vec2.create();
             inst1.properties.is_dynamic = false;
             inst1.properties.is_rigid = false;
             this.transfer_render_node(inst2, inst1);
+            game.remove_instance(inst1.id);
+        } else if (inst1.type == this.type_enum.HARPOON_PROJECTILE){ 
             game.remove_instance(inst1.id);
         } else if (inst1.type == this.type_enum.PLAYER && inst2.type == this.type_enum.BUBBLE_PROJECTILE){
             inst1.take_damage(1);

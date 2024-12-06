@@ -6,6 +6,8 @@ import { GameInstance_tool } from './game_engine/GameInstance.js';
 const game = new Game();
 await game.load();
 
+console.log(game.instances);
+
 //necessary to have these in this specific script
 const canvas = game.get_canvas();
 function update(t, dt) {

@@ -13,8 +13,8 @@ export class TopDownController {
 
     constructor(game_instance, camera, canvas, {
             cam_properties = {
-                cam_elevation : 100,
-                cam_offset : [8, 8],
+                cam_elevation : 30,
+                cam_offset : [10, 10],
             },
             dash = {
                 cooldown_total : 1,

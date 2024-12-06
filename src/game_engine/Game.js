@@ -72,6 +72,11 @@ export class Game {
         this.amount_of_enemies_to_spawn = 1.0;              //internal counter for when to spawn enemies
         this.tank_spawn_angles = [];
 
+        this.playable_area = {
+            min: [-100, -1, -90],
+            max: [100, 10, 106]
+        }
+
         this.total_enemy_counts_per_wave = wave_settings.total_enemy_counts_per_wave;
         this.spawn_delay = wave_settings.spawn_delay
         this.spawn_distances = wave_settings.spawn_distances;
@@ -91,8 +96,7 @@ export class Game {
 
         switch (this.state){
             case this.game_state_enum.WAVE_RESET:
-                this.create_instance(GameInstance_tool.type_enum.CRATE, [0,0], 40, 0);
-                if (wave_settings.bolt_spawn_waves.includes(this.wave_count)) this.create_instance(GameInstance_tool.type_enum.BOLT_PICKUP, [-5,-5], 1.5, 0);
+                this.create_instance(GameInstance_tool.type_enum.CRATE, [0,0], 20, 0);
                 this.state = this.game_state_enum.IDLE;
                 break;
             case this.game_state_enum.IDLE:
@@ -217,6 +221,7 @@ export class Game {
 
     crate_break_event(){
         this.state = this.game_state_enum.WAVE_BEGINNING;
+        if (wave_settings.bolt_spawn_waves.includes(this.wave_count)) this.create_instance(GameInstance_tool.type_enum.BOLT_PICKUP, [-5,-5], 1.5, 0);
     }
 
     update_scene(t, dt){
@@ -248,7 +253,7 @@ export class Game {
 
     async loadPlayer(){
         
-        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [3,3], -0.1, 0);
+        this.player = await this.create_instance(GameInstance_tool.type_enum.PLAYER, [6,6], -0.3, 0);
         this.loader.loadController(this);
 
         this.player.weapon = await this.create_instance(GameInstance_tool.type_enum.HARPOON_EMPTY, [0,0], 1, 0)
