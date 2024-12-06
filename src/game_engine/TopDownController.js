@@ -13,7 +13,7 @@ export class TopDownController {
 
     constructor(game_instance, camera, canvas, {
             cam_properties = {
-                cam_elevation : 50,
+                cam_elevation : 100,
                 cam_offset : [8, 8],
             },
             dash = {
@@ -233,8 +233,8 @@ export class TopDownController {
         vec2.normalize(facing_direction, facing_direction);
         
         this.game_instance.facing_direction = [
-            facing_direction[0] * this.rotation_offset.cos - facing_direction[1] * this.rotation_offset.sin,
-            facing_direction[0] * this.rotation_offset.sin + facing_direction[1] * this.rotation_offset.cos,
+            -(facing_direction[0] * this.rotation_offset.cos - facing_direction[1] * this.rotation_offset.sin),
+            -(facing_direction[0] * this.rotation_offset.sin + facing_direction[1] * this.rotation_offset.cos),
         ];
     }
 

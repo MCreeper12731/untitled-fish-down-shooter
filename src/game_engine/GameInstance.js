@@ -113,13 +113,13 @@ export const GameInstance_tool = Object.freeze({
         child_transform.scale[1] = child_transform.scale[1] / parent_transform.scale[1];
         child_transform.scale[2] = child_transform.scale[2] / parent_transform.scale[2];
         //fix translation
-        child_transform.translation[0] = (parent_transform.translation[0] - child_transform.translation[0]) * child_transform.scale[0];
+        child_transform.translation[0] = -(parent_transform.translation[0] - child_transform.translation[0]) * child_transform.scale[0];
         if (child_transform.translation[1] > parent_transform.translation[1]){
             child_transform.translation[1] = (child_transform.translation[1] - parent_transform.translation[1]) * child_transform.scale[1];
         } else {
             child_transform.translation[1] = (parent_transform.translation[1] - child_transform.translation[1]) * child_transform.scale[1];
         }
-        child_transform.translation[2] = (parent_transform.translation[2] - child_transform.translation[2]) * child_transform.scale[2];
+        child_transform.translation[2] = -(parent_transform.translation[2] - child_transform.translation[2]) * child_transform.scale[2];
         //fix rotation
         const new_rot = quat.clone(parent_transform.rotation);
         quat.invert(new_rot, new_rot);
@@ -169,8 +169,13 @@ export class GameInstance{
         this.avoid_displacement = avoid_displacement;
     }
 
+    add_render_node(render_node){
+        this.render_node = render_node;
+        this.base_rotation = this.render_node.getComponentOfType(Transform).rotation;
+    }
+
     update(t, dt){
-        if (this.properties.is_dynamic === true){
+        if (this.properties.is_dynamic === true && this.render_node != undefined){
 
             let new_velocity = vec2.clone(this.properties.velocity_2d)
 
@@ -197,7 +202,7 @@ export class GameInstance{
         this.update_3d_position(t, dt);
 
         //cull projectiles out of world
-        if (vec2.length(this.world_position) > 100){
+        if (vec2.length(this.world_position) > 300){
             this.game_ref.remove_instance(this.id);
         }
     }
@@ -216,27 +221,33 @@ export class GameInstance{
         const x_angle = quat.getAxisAngle([1,0,0], t.rotation);
         const facing_dir = vec2.create();
         vec2.add(facing_dir, facing_dir, [1, 0]);
-        vec2.rotate(facing_dir, facing_dir, [0,0], -x_angle);
+        vec2.rotate(facing_dir, facing_dir, [0,0], x_angle);
         this.facing_direction = facing_dir;
     }
-    
+
     update_3d_position(t, dt){
         //updates 3d Node vectors with the game 2d vectors
+        if (this.render_node == undefined || this.properties.is_dynamic === false) return;
 
-        const x_off = this.properties.model_x_offset != undefined ? this.properties.model_x_offset : 0;
-        const y_off = this.properties.model_y_offset != undefined ? this.properties.model_y_offset : 0;
+        //const x_off = this.properties.model_x_offset != undefined ? this.properties.model_x_offset : 0;
+        //const y_off = this.properties.model_y_offset != undefined ? this.properties.model_y_offset : 0;
 
         const trans = this.render_node.getComponentOfType(Transform); 
         trans.translation[0] = this.world_position[0];
         trans.translation[2] = this.world_position[1];
         trans.translation[1] = this.elevation;
         
-        const x_angle = Math.atan2(this.facing_direction[1], this.facing_direction[0]);
-        const q_rot = quat.create();
 
-        const rot_offset = this.properties.model_rotation_offset != undefined ? this.properties.model_rotation_offset : 0;
-        quat.rotateY(q_rot, q_rot, x_angle - Math.PI +  rot_offset * (Math.PI/180));
-        trans.rotation = q_rot;
+
+        const inst_rotation = quat.fromValues(this.base_rotation[0], this.base_rotation[1], this.base_rotation[2], this.base_rotation[3]);
+        const rot_offset = this.properties.model_rotation_offset != undefined ? this.properties.model_rotation_offset * Math.PI/180 : 0;
+
+        let angle = Math.atan2(this.facing_direction[1], this.facing_direction[0]);
+        if (angle < 0) angle += 2 * Math.PI;
+        
+        quat.rotateY(inst_rotation, inst_rotation, angle - rot_offset);
+
+        trans.rotation = inst_rotation;
 
         this.apply_animators(t, dt);
     }
@@ -383,7 +394,8 @@ export class Player extends GameInstance{
 
         const looking_dir = vec2.clone(this.facing_direction);
         looking_dir[0] = -looking_dir[0];
-        vec2.scale(looking_dir, looking_dir, range);
+
+        vec2.scale(looking_dir, looking_dir, -range);
         const attack_location = vec2.fromValues(this.world_position[0], this.world_position[1]);
         vec2.add(attack_location, attack_location, looking_dir);
 
@@ -489,7 +501,7 @@ export class Player extends GameInstance{
         this.weapon.properties.friction = this.properties.friction;
         this.weapon.properties.max_speed = this.properties.max_speed;
 
-        const dist = 1.3;
+        const dist = -1.3;
         const x_off = -1.4;
         const elevation  = -0.1;
     
@@ -555,7 +567,7 @@ export class HarpoonGunWeapon extends GameInstance {
     shoot(player_ref){
         const dist = 1;
         const spread_dist = 3;
-        const x_off = -1.05;
+        const x_off = 1.05;
         const elevation  = 2.4;
     
         const projectile_pos = vec2.clone(player_ref.world_position);
@@ -582,19 +594,21 @@ export class HarpoonGunWeapon extends GameInstance {
             const spawn_pos = vec2.clone(projectile_pos);
 
             const dir = vec2.clone(player_ref.facing_direction);
+            vec2.scale(dir, dir, -1);
             dir[0] = -dir[0];
             vec2.scale(dir, dir, spread_dist);
             vec2.rotate(dir, dir, [0, 0], shoot_angle_offset * i);
             vec2.add(spawn_pos, spawn_pos, dir);
-        
-            let angle = Math.atan2(dir[1], -dir[0]);
+            
+
+            let angle = Math.atan2(dir[1], dir[0]);
             if (angle < 0) angle += 2 * Math.PI;
         
             vec2.scale(properties.velocity_2d, dir, properties.max_speed);
 
             properties.damage = player_settings.damage_multiplier ** (this.loaded_count - 1);
 
-            this.game_ref.create_instance(GameInstance_tool.type_enum.HARPOON_PROJECTILE, spawn_pos, elevation, angle, properties);
+            this.game_ref.create_instance(GameInstance_tool.type_enum.HARPOON_PROJECTILE, spawn_pos, elevation, -angle, properties);
         }
         
         this.shoot_animation();

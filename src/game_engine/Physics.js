@@ -1,6 +1,7 @@
 import { vec3, mat4 } from 'glm';
 import { getGlobalModelMatrix } from 'engine/core/SceneUtils.js';
-import { GameInstance_tool } from './GameInstance.js';
+import { GameInstance_tool, Enemy } from './GameInstance.js';
+import { Game } from './Game.js';
 
 export class Physics {
 
@@ -60,6 +61,14 @@ export class Physics {
     }
 
     resolveCollision(game_instance_a, game_instance_b) {
+        //ignore list
+        if (game_instance_a.type == GameInstance_tool.type_enum.PLAYER && game_instance_b.type == GameInstance_tool.type_enum.HARPOON_PROJECTILE ||
+            game_instance_b.type == GameInstance_tool.type_enum.PLAYER && game_instance_a.type == GameInstance_tool.type_enum.HARPOON_PROJECTILE ||
+            game_instance_a instanceof Enemy && game_instance_b.type == GameInstance_tool.type_enum.BUBBLE_PROJECTILE ||
+            game_instance_b instanceof Enemy && game_instance_a.type == GameInstance_tool.type_enum.BUBBLE_PROJECTILE
+        ) {
+            return false;
+        }
 
         // Get global space AABBs.
         if (!game_instance_a.properties.bounding_box || !game_instance_b.properties.bounding_box) return;

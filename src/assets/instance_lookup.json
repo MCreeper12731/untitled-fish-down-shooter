@@ -111,10 +111,10 @@
             "image": "../assets/models/crate/crate.png"
         },
         "properties": {
-            "model_scale" : 2.5,
-            "model_elevation" : 0.2,
+            "model_scale" : 3,
+            "model_elevation" : 0.3,
 
-            "is_dynamic": false,
+            "is_dynamic": true,
             "is_rigid": true,
             "velocity_2d": [0, 0],
             "max_speed": 0,

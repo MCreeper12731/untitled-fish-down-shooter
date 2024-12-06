@@ -17,6 +17,7 @@ import {
 import { Light } from './Light.js';
 import { createTextureFromSource } from '../../engine/WebGPU.js';
 import { UIRenderer } from './UIRenderer.js';
+import { Invert } from './GameLoader.js';
 
 const vertexBufferLayout = {
     arrayStride: 32,
@@ -349,12 +350,28 @@ export class GameRenderer extends BaseRenderer {
         return gpuObjects;
     }
 
-    prepareTexture(texture) {
+    prepareImage(image, isSRGB = false, invert_y = false) {
+        if (this.gpuObjects.has(image)) {
+            return this.gpuObjects.get(image);
+        }
+
+        const gpuTexture = WebGPU.createTexture(this.device, {
+            flipY : invert_y,
+            source: image,
+            format: isSRGB ? 'rgba8unorm-srgb' : 'rgba8unorm',
+        });
+
+        const gpuObjects = { gpuTexture };
+        this.gpuObjects.set(image, gpuObjects);
+        return gpuObjects;
+    }
+
+    prepareTexture(texture, invert_y) {
         if (this.gpuObjects.has(texture)) {
             return this.gpuObjects.get(texture);
         }
 
-        const { gpuTexture } = this.prepareImage(texture.image, texture.isSRGB);
+        const { gpuTexture } = this.prepareImage(texture.image, texture.isSRGB, invert_y);
         const { gpuSampler } = this.prepareSampler(texture.sampler);
 
         const gpuObjects = { gpuTexture, gpuSampler };
@@ -362,12 +379,12 @@ export class GameRenderer extends BaseRenderer {
         return gpuObjects;
     }
 
-    prepareMaterial(material) {
+    prepareMaterial(material, invert_y) {
         if (this.gpuObjects.has(material)) {
             return this.gpuObjects.get(material);
         }
 
-        const baseTexture = this.prepareTexture(material.baseTexture);
+        const baseTexture = this.prepareTexture(material.baseTexture, invert_y);
 
         const materialUniformBuffer = this.device.createBuffer({
             size: 16,
@@ -594,8 +611,11 @@ export class GameRenderer extends BaseRenderer {
         this.device.queue.writeBuffer(modelUniformBuffer, 64, normalMatrix);
         this.renderPass.setBindGroup(1, modelBindGroup);
 
+        const invert = node.getComponentOfType(Invert);
+        const invert_y = invert != undefined ? invert.invert : false;
+
         for (const model of getModels(node)) {
-            this.renderModel(model);
+            this.renderModel(model, invert_y);
         }
 
         for (const child of node.children) {
@@ -603,14 +623,14 @@ export class GameRenderer extends BaseRenderer {
         }
     }
 
-    renderModel(model) {
+    renderModel(model, invert_y) {
         for (const primitive of model.primitives) {
-            this.renderPrimitive(primitive);
+            this.renderPrimitive(primitive, invert_y);
         }
     }
 
-    renderPrimitive(primitive) {
-        const { materialUniformBuffer, materialBindGroup } = this.prepareMaterial(primitive.material);
+    renderPrimitive(primitive, invert_y) {
+        const { materialUniformBuffer, materialBindGroup } = this.prepareMaterial(primitive.material, invert_y);
         this.device.queue.writeBuffer(materialUniformBuffer, 0, new Float32Array([
             ...primitive.material.baseFactor,
         ]));

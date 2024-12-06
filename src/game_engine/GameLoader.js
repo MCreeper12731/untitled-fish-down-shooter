@@ -21,7 +21,11 @@ import { Light } from './Light.js';
 import { TopDownController } from './TopDownController.js';
 import { Animator, Keyframe, load_animators } from './Animator.js';
 
-
+export class Invert{
+    constructor(invert){
+        this.invert = invert;
+    }
+}
 
 export class GameLoader {
 
@@ -73,7 +77,9 @@ export class GameLoader {
             }
 
             const instance = this.init_instance(game_ref, id, type.type_id);
-            instance.render_node = node
+
+            node.addComponent(new Invert(instance.properties.model_invert_y != undefined ? instance.properties.model_invert_y : false));
+            instance.add_render_node(node);
             load_animators(node, type.type_id);
             instance.update_2d_position();
             game_instances.push(instance);
@@ -181,7 +187,6 @@ export class GameLoader {
             node.addComponent(model);
         }
 
-
         const model_scale = instance.properties.model_scale;
         if (model_scale != undefined){
             const transform = node.getComponentOfType(Transform);
@@ -194,7 +199,8 @@ export class GameLoader {
             instance.elevation = elevation;
         }
         
-        instance.render_node = node;
+        node.addComponent(new Invert(instance.properties.model_invert_y != undefined ? instance.properties.model_invert_y : true));
+        instance.add_render_node(node);
         instance.world_position = position_2d;
         
         vec2.rotate(instance.facing_direction, instance.facing_direction, [0,0], rotation);
