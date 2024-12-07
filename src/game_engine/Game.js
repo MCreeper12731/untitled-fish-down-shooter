@@ -9,10 +9,11 @@ import {
     Material
 } from 'engine/core.js';
 import { GameLoader } from './GameLoader.js';
-import { GameInstance_type, GameInstance, GameInstance_tool, Enemy, Player, HarpoonGunWeapon } from './GameInstance.js';
+import { GameInstance_type, GameInstance, GameInstance_tool, Enemy, Player, HarpoonGunWeapon, BoltPickup } from './GameInstance.js';
 import { TopDownController } from './TopDownController.js';
 import { Physics } from './Physics.js';
 import { wave_settings, camera_settings } from './config.js'
+import { quat, vec3, mat4, vec2 } from 'glm';
 
 
 export class Game {
@@ -61,11 +62,13 @@ export class Game {
         }
         this.game_tip_animation_duration = 1;
         this.game_tip_enabled = true;
+        this.bolt_tip_enabled = false;
+        this.bolt_tip_animation_duration = 0;
 
         //game loop
         this.game_reset_flag = false;
         this.reload_player = false;
-        this.game_reset_length = 1;
+        this.game_reset_length = 2;
         this.game_reset_timer = 0;
 
         this.wave_progress = wave_progress;                 //% of wave defeated [0-1]
@@ -101,6 +104,8 @@ export class Game {
         this.game_time = 0; 
         this.game_tip_enabled = false;
 
+
+        this.UI_data.weapon_ui_variation = 0;
         this.wave_progress = 0.0;
         this.displaying_progress = false;
         this.cur_enemy_count = 0;
@@ -112,7 +117,9 @@ export class Game {
 
         //remove enemies
         this.instances.forEach(instance => {
-            if (instance == undefined || !(instance instanceof Enemy)) return;
+            if (instance == undefined || !(instance instanceof Enemy || instance instanceof BoltPickup ||
+                instance.type == GameInstance_tool.type_enum.HARPOON_PROJECTILE
+            )) return;
             this.remove_instance(instance.id);
         });
         
@@ -120,7 +127,7 @@ export class Game {
         this.remove_instance(this.player.weapon.id);
         this.remove_instance(this.player.id);
         this.loader.render_scene.removeChild(this.camera);
-
+        
         this.reload_player = true;
         this.game_reset_timer = t + this.game_reset_length;
         this.game_reset_flag = false;
@@ -150,16 +157,28 @@ export class Game {
             case this.game_state_enum.WAVE_BEGINNING:
                 //disable the game tip
                 this.game_tip_enabled = false;
+                this.bolt_tip_enabled = false;
 
                 //setting up data for wave
                 this.displaying_progress = true;
                 this.wave_progress = 0.0;
                 this.wave_count++;
-                this.total_enemy_count = this.total_enemy_counts_per_wave[this.wave_count][0] + this.total_enemy_counts_per_wave[this.wave_count][1] + this.total_enemy_counts_per_wave[this.wave_count][2];
+
+
+                const wave_id = this.wave_count < 12 ? this.wave_count : 11;
+                const cur_total_enemy_counts = this.total_enemy_counts_per_wave[wave_id];
+
+                if (this.wave_count > 11){
+                    vec3.scale(cur_total_enemy_counts, cur_total_enemy_counts, 1.5 * (this.wave_count - 11));
+                    cur_total_enemy_counts[0] = Math.floor(cur_total_enemy_counts[0])
+                    cur_total_enemy_counts[1] = Math.floor(cur_total_enemy_counts[1])
+                    cur_total_enemy_counts[2] = Math.floor(cur_total_enemy_counts[2])
+                }
+                this.cur_total_enemy_counts = cur_total_enemy_counts;
+                this.total_enemy_count = cur_total_enemy_counts[0] + cur_total_enemy_counts[1] + cur_total_enemy_counts[2];
                 
                 //start next wave
                 this.state = this.game_state_enum.WAVE_IN_PROGRESS;
-                console.log(`Wave ${this.wave_count} started with ${this.total_enemy_counts_per_wave[this.wave_count].toString()} as enemies!`);
                 break;
             case this.game_state_enum.WAVE_IN_PROGRESS:
 
@@ -177,6 +196,11 @@ export class Game {
                 this.amount_of_enemies_to_spawn = 1;
                 this.state = this.game_state_enum.WAVE_RESET;
                 this.tank_spawn_angles = [];
+
+                if (this.wave_count == 1){
+                    this.bolt_tip_enabled = true;
+                    this.bolt_tip_animation_duration = t;
+                }
                 break;
             default:
                 console.log("game stateless error");
@@ -191,7 +215,7 @@ export class Game {
         this.amount_of_enemies_to_spawn += dt * 1000 / this.spawn_delay;
         if (this.amount_of_enemies_to_spawn < 0) this.amount_of_enemies_to_spawn = this.total_enemy_count - this.cur_enemy_count;
 
-        const cur_total_enemy_counts = this.total_enemy_counts_per_wave[this.wave_count];
+        const cur_total_enemy_counts = this.cur_total_enemy_counts;
 
         for (let i = 0; i < this.amount_of_enemies_to_spawn - 1; i++) {
             
@@ -265,9 +289,9 @@ export class Game {
         this.wave_progress = (this.cur_enemy_killed / this.total_enemy_count);
     }
 
-    crate_break_event(){
+    crate_break_event(x, y){
         this.state = this.game_state_enum.WAVE_BEGINNING;
-        if (wave_settings.bolt_spawn_waves.includes(this.wave_count)) this.create_instance(GameInstance_tool.type_enum.BOLT_PICKUP, [-5,-5], 1.5, 0);
+        if (wave_settings.bolt_spawn_waves.includes(this.wave_count)) this.create_instance(GameInstance_tool.type_enum.BOLT_PICKUP, [x, y], 1.5, 0);
     }
 
     update_scene(t, dt){

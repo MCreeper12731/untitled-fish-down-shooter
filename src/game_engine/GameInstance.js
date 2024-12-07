@@ -88,6 +88,9 @@ export const GameInstance_tool = Object.freeze({
             inst1.properties.is_rigid = false;
             this.transfer_render_node(inst2, inst1);
             game.remove_instance(inst1.id);
+        } else if (inst1.type == this.type_enum.HARPOON_PROJECTILE && inst2.type == this.type_enum.BUBBLE_PROJECTILE){
+            game.remove_instance(inst1.id);
+            game.remove_instance(inst2.id);
         } else if (inst1.type == this.type_enum.HARPOON_PROJECTILE){ 
             game.remove_instance(inst1.id);
         } else if (inst1.type == this.type_enum.PLAYER && inst2.type == this.type_enum.BUBBLE_PROJECTILE){
@@ -275,7 +278,9 @@ export class WaveCrate extends GameInstance{
     }
 
     take_damage(damage){
-        this.game_ref.crate_break_event();
+
+        const pos = this.world_position;
+        this.game_ref.crate_break_event(pos[0], pos[1]);
         this.game_ref.remove_instance(this.id);
     }   
 
@@ -935,8 +940,10 @@ export class StandardEnemy extends Enemy{
                 }
                 break;
             case this.state_enum.RANGED_ATTACK:
+                this.avoid_displacement = true;
                 //shoot projectile and start chasing player again
                 if (t >  this.ranged_duration_timer){
+                    this.avoid_displacement = false;
                     this.spawn_projectile();
                     this.running_animation(true);
                     this.state = this.state_enum.CHASE_PLAYER;

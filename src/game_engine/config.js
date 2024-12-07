@@ -18,18 +18,19 @@ const wave_settings = {
     // delay between enemy spawns in milliseconds
     spawn_delay: 250,
     // how far from the player an enemy should spawn
-    spawn_distances: [35, 18, 25],
-    chance_to_spawn_near_tank: 0.85,
+    spawn_distances: [50, 35, 45],
+    chance_to_spawn_near_tank: 0.15,
     bolt_spawn_waves: [1, 3, 5, 9]
 }
 
 const camera_settings = {
-    aspect : 1.57592444126543,
-    far: 1000,
+    halfy : 20,
     fovy : 1.024778957977204,
-    half : 1,
+
+
     near : 0.10000000149011612,
-    orthographic : 0
+    orthographic : 1,
+    far: 1000,
 }
 
 const player_settings = {
@@ -57,7 +58,7 @@ const enemy_settings = {
         melee_attack_duration: 1,
         melee_attack_cooldown: 3,
         health: 40,
-        damage_reduction: 10 // (1 - damage_reduction) = damage reduction%
+        damage_reduction: 7 // (1 - damage_reduction) = damage reduction%
     }
 }
 

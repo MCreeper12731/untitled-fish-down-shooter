@@ -101,16 +101,13 @@ export class GameLoader {
         const light_transform = global_light.getComponentOfType(Transform);
         const down_rotation = quat.create();
         quat.rotateX(down_rotation, down_rotation, -1.57);
-        light_transform.rotation = down_rotation
-
-
+        light_transform.rotation = down_rotation;
         global_light.addComponent(new Light({resolution : [resolution, resolution]}));
         global_light.addComponent(new Camera({
             near: 2,
             far: light_transform.translation[1]+1,
             fovy: fov,
         }));
-
         return global_light;
     }
 
@@ -121,6 +118,7 @@ export class GameLoader {
         camera.addComponent(new Transform());
         camera.addComponent(new TopDownController(game_ref.player, camera, this.canvas));
         game_ref.camera = camera;
+        game_ref.resize(this.canvas.width, this.canvas.height);
         this.render_scene.addChild(camera);
     }
 
