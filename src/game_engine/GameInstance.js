@@ -343,7 +343,7 @@ export class Player extends GameInstance{
     }
 
     take_damage(damage){
-        console.log("player took damage");
+        this.game_ref.game_reset_flag = true;
     }
 
     pickup_bolt(num){
@@ -485,6 +485,7 @@ export class Player extends GameInstance{
     }
 
     update(t, dt){
+        if (this.game_ref.game_reset_flag) return;
 
         switch (this.player_state){
             case this.player_state_enum.PLAYER_IDLE:
@@ -523,11 +524,15 @@ export class Player extends GameInstance{
         if (this.auto_reload == true) {
             this.reload(t, dt);
         } 
-        this.stick_to_player(t, dt);
+        
+        if (this.weapon != undefined){
+            this.stick_to_player(t, dt);
+        }
         super.update(t,dt);
     }
 
     stick_to_player(t, dt){
+
         this.weapon.properties.acceleration_2d = vec2.clone(this.properties.acceleration_2d);
         this.weapon.properties.friction = this.properties.friction;
         this.weapon.properties.max_speed = this.properties.max_speed;
