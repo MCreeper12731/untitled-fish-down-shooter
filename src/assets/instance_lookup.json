@@ -205,6 +205,8 @@
             "image": "../assets/models/enemies/shark.png"
         },
         "properties": {
+            "model_rotation_offset" : 180,
+
             "is_dynamic": true,
             "is_rigid": true,
             "velocity_2d": [0, 0],
