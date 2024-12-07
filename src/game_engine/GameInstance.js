@@ -308,11 +308,13 @@ export class Player extends GameInstance{
         health = 10,
         weapon = undefined,
         melee_cooldown = 0.7,
-        reload_length = 0.3,
+        reload_length = 0.35,
         cur_weapon_load = 0,
         max_weapon_load = 0,
         weapon_load_cap = 5,
         melee_attack_range = 3,
+        auto_reload = true,
+        reload_gap = 0.02, //2 ms between 2 reload animations
 
         player_state_enum = {
             PLAYER_IDLE : 0,
@@ -335,6 +337,9 @@ export class Player extends GameInstance{
         this.max_weapon_load = max_weapon_load;
         this.weapon_load_cap = weapon_load_cap;
         this.player_state_enum = player_state_enum;
+        this.auto_reload = auto_reload;
+        this.reload_gap = reload_gap;
+        this.reload_cooldown_timer = 0;
     }
 
     take_damage(damage){
@@ -352,7 +357,9 @@ export class Player extends GameInstance{
         switch (this.player_state){
             case this.player_state_enum.PLAYER_IDLE:
             case this.player_state_enum.PLAYER_RUNNING:
-                if (this.cur_weapon_load < this.max_weapon_load && t > this.reload_timer){
+                if (this.cur_weapon_load < this.max_weapon_load && t > this.reload_timer && this.check_animation_running("shoot_animation") == false
+                    && t > this.reload_cooldown_timer    
+                ){
                     this.reload_timer = t + this.reload_length;
                     //start reload
                     this.weapon.reload_animation();
@@ -367,27 +374,35 @@ export class Player extends GameInstance{
 
     }
 
-    click(t, dt){
-        switch (this.player_state){
-            case this.player_state_enum.PLAYER_IDLE:
-            case this.player_state_enum.PLAYER_RUNNING:
-                if (this.cur_weapon_load > 0){
-                    //shoot
-                    this.melee_timer = t + this.melee_cooldown/2; //prevent instantly melee attacking after shooting
-                    this.weapon.shoot(this);
-                    this.shoot_animation();
-
-                } else if (t > this.melee_timer){
-                    //melee
-                    this.melee_timer = t + this.melee_cooldown;
-                    this.weapon.melee_animation();
-                    this.melee_animation();
-                    this.attempt_melee();
-                }
-                break;
-            default:
-                break;
+    cancel_reload(t, dt){
+        this.reload_timer = t + this.reload_length;
+        //go back to running or idle
+        if (vec2.length(this.properties.acceleration_2d) > 0){
+            this.player_state = this.player_state_enum.PLAYER_RUNNING;
+            this.running_animation(true);
+        } else {
+            this.player_state = this.player_state_enum.PLAYER_IDLE;
+            this.running_animation(false);
         }
+    }
+
+    click(t, dt, button){
+        if (this.cur_weapon_load > 0 && button == 0){
+            //shoot
+            this.melee_timer = t + this.melee_cooldown/2; //prevent instantly melee attacking after shooting
+            this.weapon.shoot(this);
+            this.shoot_animation();
+            this.cancel_reload(t, dt);
+            this.game_ref.UI_data.weapon_ui_variation = Math.min(5, this.cur_weapon_load);
+
+        } else if (t > this.melee_timer && button == 1){
+            //melee
+            this.melee_timer = t + this.melee_cooldown;
+            this.weapon.melee_animation();
+            this.melee_animation();
+            this.attempt_melee();
+        }
+
     }
 
     attempt_melee(){
@@ -421,6 +436,16 @@ export class Player extends GameInstance{
             }
 
         }
+    }
+
+    check_animation_running(animation_label){
+        const animators = this.render_node.getComponentsOfType(Animator);
+        animators.forEach(animator => {
+            if (animator.label == animation_label){
+                return animator.running;
+            }
+        });
+        return false;
     }
 
     melee_animation(){
@@ -477,6 +502,8 @@ export class Player extends GameInstance{
             case this.player_state_enum.PLAYER_RELOADING:
                 if (t > this.reload_timer){
                     //when finishing reload
+                    this.game_ref.UI_data.weapon_ui_variation = Math.min(5, this.cur_weapon_load);
+                    this.reload_cooldown_timer = t + this.reload_gap;
                     this.weapon.change_model(this.weapon.loaded_count);
                     this.player_state = this.player_state_enum.PLAYER_IDLE;
                     //go back to running or idle
@@ -493,7 +520,9 @@ export class Player extends GameInstance{
                 break;
         }
 
-        this.game_ref.UI_data.weapon_ui_variation = Math.min(5, this.cur_weapon_load);
+        if (this.auto_reload == true) {
+            this.reload(t, dt);
+        } 
         this.stick_to_player(t, dt);
         super.update(t,dt);
     }
@@ -541,7 +570,7 @@ export class HarpoonGunWeapon extends GameInstance {
         const animators = this.render_node.getComponentsOfType(Animator);
         animators.forEach(animator => {
             if (animator.label == "reload_animation"){
-                animator.start_animation();
+                animator.reset_and_start();
 
             }
         });
@@ -614,6 +643,7 @@ export class HarpoonGunWeapon extends GameInstance {
         }
         
         this.shoot_animation();
+        player_ref.prev_weapon_load = player_ref.cur_weapon_load;
         player_ref.cur_weapon_load = 0;
         this.loaded_count = 0; 
         this.change_model(0);

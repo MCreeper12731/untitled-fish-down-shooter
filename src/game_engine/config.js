@@ -56,7 +56,7 @@ const enemy_settings = {
         melee_attack_range: 10,
         melee_attack_duration: 1,
         melee_attack_cooldown: 3,
-        health: 100,
+        health: 40,
         damage_reduction: 10 // (1 - damage_reduction) = damage reduction%
     }
 }
