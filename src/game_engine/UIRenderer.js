@@ -165,8 +165,8 @@ export class UIRenderer {
 
         const UI_ind = 0;
         const total_scale = 2;
-        const x_offset = 0.015;
-        const y_offset = 0.03;
+        const x_offset = 0.02;
+        const y_offset = 0.06;
 
         const game_time = this.game_ref.game_time;
         const duration = this.game_ref.game_tip_animation_duration;

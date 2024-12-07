@@ -72,7 +72,7 @@ export class GameLoader {
 
         this.render_scene.traverse(node => {
             const type = node.getComponentOfType(GameInstance_type);
-            if (type.type_id <= 1){
+            if (type.type_id < 1){
                 return;
             }
 
@@ -87,7 +87,7 @@ export class GameLoader {
             id++;
         });
 
-        const global_light = this.load_global_light(512*8, Math.PI - 0.4);
+        const global_light = this.load_global_light(512*16, Math.PI - 0.4);
 
         this.render_scene.addChild(global_light);
         //game_ref.player = GameInstance_tool.init_instance(game_ref, id++, GameInstance_tool.type_enum.PLAYER);
@@ -107,7 +107,7 @@ export class GameLoader {
         global_light.addComponent(new Light({resolution : [resolution, resolution]}));
         global_light.addComponent(new Camera({
             near: 2,
-            far: light_transform.translation[1],
+            far: light_transform.translation[1]+1,
             fovy: fov,
         }));
 

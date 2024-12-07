@@ -1,4 +1,4 @@
-import { vec3, mat4 } from 'glm';
+import { vec3, mat4, vec2 } from 'glm';
 import { getGlobalModelMatrix } from 'engine/core/SceneUtils.js';
 import { GameInstance_tool, Enemy } from './GameInstance.js';
 import { Game } from './Game.js';
@@ -24,6 +24,26 @@ export class Physics {
                 });
             }
         });
+
+        this.map_bounds_collision(t, dt);
+    }
+
+    map_bounds_collision(t, dt){
+        const player_bb = this.getTransformedAABB(this.game.player);
+        const min = this.game.playable_area.min;
+        const max = this.game.playable_area.max;
+        const world_bb = {min, max};
+
+        if (this.aabbIntersection(player_bb, world_bb) == true) return; 
+
+        
+        const player_pos = vec2.clone(this.game.player.world_position);
+        vec2.normalize(player_pos, player_pos);
+        vec2.scale(player_pos, player_pos, -dt);
+
+        this.game.player.properties.velocity_2d = vec2.create();
+        vec2.add(this.game.player.world_position, this.game.player.world_position, player_pos);
+
     }
 
     intervalIntersection(min1, max1, min2, max2) {
@@ -65,13 +85,17 @@ export class Physics {
         if (game_instance_a.type == GameInstance_tool.type_enum.PLAYER && game_instance_b.type == GameInstance_tool.type_enum.HARPOON_PROJECTILE ||
             game_instance_b.type == GameInstance_tool.type_enum.PLAYER && game_instance_a.type == GameInstance_tool.type_enum.HARPOON_PROJECTILE ||
             game_instance_a instanceof Enemy && game_instance_b.type == GameInstance_tool.type_enum.BUBBLE_PROJECTILE ||
-            game_instance_b instanceof Enemy && game_instance_a.type == GameInstance_tool.type_enum.BUBBLE_PROJECTILE
-        ) {
+            game_instance_b instanceof Enemy && game_instance_a.type == GameInstance_tool.type_enum.BUBBLE_PROJECTILE ||
+            game_instance_a.type == GameInstance_tool.type_enum.BOLT_PICKUP && game_instance_b.type == GameInstance_tool.type_enum.CRATE ||
+            game_instance_b.type == GameInstance_tool.type_enum.BOLT_PICKUP && game_instance_a.type == GameInstance_tool.type_enum.CRATE
+        ) 
+        
+        {
             return false;
         }
 
         // Get global space AABBs.
-        if (!game_instance_a.properties.bounding_box || !game_instance_b.properties.bounding_box) return;
+        if (!game_instance_a.properties.bounding_box || !game_instance_b.properties.bounding_box) return false;
         const aBox = this.getTransformedAABB(game_instance_a);
         const bBox = this.getTransformedAABB(game_instance_b);
 
