@@ -89,6 +89,12 @@ export class Game {
             WAVE_END : 4,
         };
 
+        //audio
+        this.breakBox = new Audio('/src/assets/audio/break.mp3');
+        this.breakBox.volume = 0.4
+        this.arrowShot = new Audio('/src/assets/audio/arrow_shot.mp3')
+        this.arrowShot.volume = 0.3
+
     }
 
     update(t, dt){
@@ -218,8 +224,9 @@ export class Game {
         this.cur_enemy_killed += 1;
         this.wave_progress = (this.cur_enemy_killed / this.total_enemy_count);
     }
-
+   
     crate_break_event(){
+        this.breakBox.play();
         this.state = this.game_state_enum.WAVE_BEGINNING;
         if (wave_settings.bolt_spawn_waves.includes(this.wave_count)) this.create_instance(GameInstance_tool.type_enum.BOLT_PICKUP, [-5,-5], 1.5, 0);
     }
@@ -242,7 +249,7 @@ export class Game {
         this.next_id = this.instance_count;
 
         await this.loadPlayer();
-        
+     
         
     }
 
