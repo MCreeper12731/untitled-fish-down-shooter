@@ -99,10 +99,7 @@ export class Game {
 
         //audio
         this.breakBox = new Audio('/src/assets/audio/break.mp3');
-        this.breakBox.volume = 0.4
-        this.arrowShot = new Audio('/src/assets/audio/arrow_shot.mp3')
-        this.arrowShot.volume = 0.3
-
+        this.breakBox.volume = 0.02;
     }
 
     game_reset(t, dt){

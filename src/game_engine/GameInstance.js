@@ -347,11 +347,11 @@ export class Player extends GameInstance{
         this.reload_cooldown_timer = 0;
 
         this.arrowShot = new Audio('/src/assets/audio/arrow_shot.mp3')
-        this.arrowShot.volume = 0.3
+        this.arrowShot.volume = 0.15;
         this.pickup = new Audio('/src/assets/audio/pickup.mp3')
-        this.pickup.volume = 0.5
+        this.pickup.volume = 0.3;
         this.death = new Audio('/src/assets/audio/death.mp3')
-        this.death.volume = 0.5
+        this.death.volume = 0.3;
     }
 
     take_damage(damage){
@@ -401,17 +401,15 @@ export class Player extends GameInstance{
     }
 
     click(t, dt, button){
-        this.arrowShot.play()
         if (this.cur_weapon_load > 0 && button == 0){
             this.arrowShot.currentTime=0
-            //this.arrowShot.play()
             //shoot
             this.melee_timer = t + this.melee_cooldown/2; //prevent instantly melee attacking after shooting
             this.weapon.shoot(this);
             this.shoot_animation();
             this.cancel_reload(t, dt);
             this.game_ref.UI_data.weapon_ui_variation = Math.min(5, this.cur_weapon_load);
-
+            this.arrowShot.play();
         } else if (t > this.melee_timer && button == 1){
             //melee
             this.melee_timer = t + this.melee_cooldown;
@@ -893,7 +891,7 @@ export class StandardEnemy extends Enemy{
         this.ranged_attack_duration = enemy_settings.standard.ranged_attack_duration;
 
         this.bubble = new Audio('/src/assets/audio/bubble.mp3')
-        this.bubble.volume = 0.7
+        this.bubble.volume = 0.3;
     }
 
     ranged_animation(){
