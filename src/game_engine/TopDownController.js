@@ -14,7 +14,7 @@ export class TopDownController {
     constructor(game_instance, camera, canvas, {
             cam_properties = {
                 cam_elevation : 30,
-                cam_offset : [10, 10],
+                cam_offset : [16, 16],
             },
             dash = {
                 cooldown_total : 1,
@@ -102,6 +102,9 @@ export class TopDownController {
         doc.addEventListener('mouseup', event => this.mouseup_handler(event));
         doc.addEventListener('keydown', event => this.keydown_handler(event));
         doc.addEventListener('keyup', event => this.keyup_handler(event));
+        doc.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
 
     }
 
@@ -126,8 +129,14 @@ export class TopDownController {
 
     check_click(t, dt){
         if (this.keys['MouseLeft']) {
-            this.game_instance.click?.(t, dt);
+            this.game_instance.click?.(t, dt, 0);
+            return;
         }
+        if (this.keys['MouseRight']) {
+            this.game_instance.click?.(t, dt, 1);
+            return;
+        }
+        
     }
     check_reload(t, dt){
         if (this.keys['KeyR']) {

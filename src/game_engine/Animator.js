@@ -129,6 +129,21 @@ export class Animator{
         return quat.create();
     }
 
+    reset_and_start(){
+        this.cur_keyframe.cur_runtime = 0;
+        this.prev_keyframe.cur_runtime = 0;
+        this.cur_keyframe_ind = 1;
+        this.prev_keyframe = this.keyframes[0];
+        this.cur_keyframe = this.keyframes[1];
+        this.hold_frame = true;
+
+        this.run_until_end = true;
+        this.stop_once_finished = true;
+        this.hold_frame = true;
+        this.running = true;
+        
+    }
+
     update(t, dt){
 
         if (this.hold_frame == false){
@@ -408,13 +423,13 @@ export function load_animators(node, type){
                     relative_trans : vec3.fromValues(0,0,2),
                     relative_scale : vec3.fromValues(1.2,1,1),
                     relative_rot : vec3.fromValues(0,0,-20),
-                    runtime : 0.5
+                    runtime : 0.25
                 }),
                 new Keyframe({
                     relative_trans : vec3.fromValues(0,0,0),
                     relative_scale : vec3.fromValues(1,1,1),
                     relative_rot : vec3.fromValues(0,0,0),
-                    runtime : 0.5
+                    runtime : 0.25
                 }),
             ];
             melee_shark.add_keyframes(melee_shark_keyframes);
@@ -429,13 +444,13 @@ export function load_animators(node, type){
                     relative_trans : vec3.fromValues(0,-0.5,0),
                     relative_scale : vec3.fromValues(1,1,1),
                     relative_rot : vec3.fromValues(0,0,20),
-                    runtime : 0.3
+                    runtime : 0.35
                 }),
                 new Keyframe({
                     relative_trans : vec3.fromValues(0,0,0),
                     relative_scale : vec3.fromValues(1,1,1),
                     relative_rot : vec3.fromValues(0,0,0),
-                    runtime : 0.3
+                    runtime : 0.35
                 }),
                 
             ];

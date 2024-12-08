@@ -21,6 +21,7 @@ export class UIRenderer {
 
         this.game_tip_UI_path = [
             'assets/UI/game_tip_0.png',
+            'assets/UI/game_tip_1.png'
         ];
 
         this.progress_bar_data = new Float32Array([
@@ -43,7 +44,9 @@ export class UIRenderer {
     drawUI(){
         this.progress_bar_UI();
         this.weapon_UI();
-        this.game_tip_UI();
+        this.control_tip_UI();
+        this.bolt_tip_UI();
+
     }
 
     async init(){
@@ -160,7 +163,7 @@ export class UIRenderer {
         return texture;
     }
 
-    game_tip_UI(){
+    control_tip_UI(){
         if (this.game_ref.game_tip_enabled == false) return;
 
         const UI_ind = 0;
@@ -181,6 +184,30 @@ export class UIRenderer {
         const y = 0.5 - texture_height_uv + texture_height_uv * (1 - game_tip_scale) - y_offset;
 
         this.drawTexture(this.game_tip_UI_textures[0], x, y, game_tip_scale, game_tip_scale);
+    }
+
+    bolt_tip_UI(){
+        if (this.game_ref.bolt_tip_enabled == false) return;
+
+        const UI_ind = 0;
+        const total_scale = 2;
+        const x_offset = 0.02;
+        const y_offset = 0.06;
+
+        const game_time = this.game_ref.game_time;
+        const timestamp = this.game_ref.bolt_tip_animation_duration - 0.7;
+
+        const game_tip_scale = (game_time < timestamp + 1 ? polyEaseInOut(game_time - timestamp) : 1) * total_scale;
+
+        const canvas_width = this.main_renderer.canvas.width;
+        const canvas_height = this.main_renderer.canvas.height;
+        const texture_width_uv = this.game_tip_UI_textures[UI_ind].width / canvas_width;
+        const texture_height_uv = this.game_tip_UI_textures[UI_ind].height / canvas_height;
+
+        const x = 0.5 + x_offset;
+        const y = 0.5 - texture_height_uv + texture_height_uv * (1 - game_tip_scale) - y_offset;
+
+        this.drawTexture(this.game_tip_UI_textures[1], x, y, game_tip_scale, game_tip_scale);
     }
 
     weapon_UI(){
