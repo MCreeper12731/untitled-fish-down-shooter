@@ -42,7 +42,7 @@ const enemy_settings = {
     standard: {
         melee_attack_duration: 1,
         melee_attack_cooldown: 2,
-        melee_attack_range: 6,
+        melee_attack_range: 5,
         health: 5,
         ranged_duration_timer: 0,
         ranged_attack_duration: 1

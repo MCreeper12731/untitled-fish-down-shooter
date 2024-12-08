@@ -202,15 +202,15 @@ export class Game {
 
                 if (this.wave_count == 1){
                     this.bolt_tip_enabled = true;
-                    this.bolt_tip_animation_duration = t;
+                    this.bolt_tip_animation_duration = this.game_time;
                 }
                 break;
             default:
                 console.log("game stateless error");
         }
 
-        this.physics.update(t, dt);
-        this.update_scene(t, dt);
+        this.physics.update(this.game_time, dt);
+        this.update_scene(this.game_time, dt);
     }
 
     spawn_enemies(dt){

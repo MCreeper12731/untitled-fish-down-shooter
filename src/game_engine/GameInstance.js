@@ -938,7 +938,7 @@ export class StandardEnemy extends Enemy{
                     this.attempted_melee = false;
                 } else if ((this.melee_duration_timer - t) < this.melee_attack_duration / 3 && this.attempted_melee == false){
                     //register if hit player
-                    this.melee_successful = this.scan_for_melee_attack(1);
+                    this.melee_successful = this.scan_for_melee_attack(1.5);
                     this.attempted_melee = true;
                 }
                 break;
