@@ -345,13 +345,22 @@ export class Player extends GameInstance{
         this.auto_reload = auto_reload;
         this.reload_gap = reload_gap;
         this.reload_cooldown_timer = 0;
+
+        this.arrowShot = new Audio('/src/assets/audio/arrow_shot.mp3')
+        this.arrowShot.volume = 0.3
+        this.pickup = new Audio('/src/assets/audio/pickup.mp3')
+        this.pickup.volume = 0.5
+        this.death = new Audio('/src/assets/audio/death.mp3')
+        this.death.volume = 0.5
     }
 
     take_damage(damage){
+        this.death.play()
         this.game_ref.game_reset_flag = true;
     }
 
     pickup_bolt(num){
+        this.pickup.play()
         if (this.max_weapon_load + num <= this.weapon_load_cap){
             this.max_weapon_load += num;
         }
@@ -392,7 +401,10 @@ export class Player extends GameInstance{
     }
 
     click(t, dt, button){
+        this.arrowShot.play()
         if (this.cur_weapon_load > 0 && button == 0){
+            this.arrowShot.currentTime=0
+            //this.arrowShot.play()
             //shoot
             this.melee_timer = t + this.melee_cooldown/2; //prevent instantly melee attacking after shooting
             this.weapon.shoot(this);
@@ -879,6 +891,9 @@ export class StandardEnemy extends Enemy{
         super.health = enemy_settings.standard.health;
         this.ranged_duration_timer = enemy_settings.standard.ranged_duration_timer;
         this.ranged_attack_duration = enemy_settings.standard.ranged_attack_duration;
+
+        this.bubble = new Audio('/src/assets/audio/bubble.mp3')
+        this.bubble.volume = 0.7
     }
 
     ranged_animation(){
@@ -945,6 +960,7 @@ export class StandardEnemy extends Enemy{
                 if (t >  this.ranged_duration_timer){
                     this.avoid_displacement = false;
                     this.spawn_projectile();
+                    this.bubble.play()
                     this.running_animation(true);
                     this.state = this.state_enum.CHASE_PLAYER;
                 }
