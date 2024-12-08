@@ -20,7 +20,7 @@ const wave_settings = {
     // how far from the player an enemy should spawn
     spawn_distances: [50, 35, 45],
     chance_to_spawn_near_tank: 0.15,
-    bolt_spawn_waves: [1, 3, 5, 9]
+    bolt_spawn_waves: [1, 3, 5, 7, 9]
 }
 
 const camera_settings = {
