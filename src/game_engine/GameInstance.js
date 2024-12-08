@@ -100,10 +100,10 @@ export const GameInstance_tool = Object.freeze({
             inst2.take_damage(1);
             game.remove_instance(inst1.id);
         } else if (inst1.type == this.type_enum.PLAYER && inst2.type == this.type_enum.BOLT_PICKUP){
-            inst1.pickup_bolt(1);
+            inst1.pickup_bolt(2);
             game.remove_instance(inst2.id);
         } else if (inst2.type == this.type_enum.PLAYER && inst1.type == this.type_enum.BOLT_PICKUP) {
-            inst2.pickup_bolt(1);
+            inst2.pickup_bolt(2);
             game.remove_instance(inst1.id);
         }
 
@@ -362,7 +362,12 @@ export class Player extends GameInstance{
     pickup_bolt(num){
         this.pickup.play()
         if (this.max_weapon_load + num <= this.weapon_load_cap){
-            this.max_weapon_load += num;
+            if (this.max_weapon_load == 0){
+                this.max_weapon_load += 1;
+            } else {
+                this.max_weapon_load += num;
+            }
+            
         }
         this.game_ref.bolt_pickup_event();
     }

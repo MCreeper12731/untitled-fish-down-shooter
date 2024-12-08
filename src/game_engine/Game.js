@@ -295,7 +295,9 @@ export class Game {
     crate_break_event(x, y){
         this.breakBox.play();
         this.state = this.game_state_enum.WAVE_BEGINNING;
-        if (wave_settings.bolt_spawn_waves.includes(this.wave_count)) this.create_instance(GameInstance_tool.type_enum.BOLT_PICKUP, [x, y], 1.5, 0);
+        if (wave_settings.bolt_spawn_waves.includes(this.wave_count)) {
+            this.create_instance(GameInstance_tool.type_enum.BOLT_PICKUP, [x, y], 1.5, 0);
+        }
     }
 
     update_scene(t, dt){
